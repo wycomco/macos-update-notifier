@@ -16,7 +16,9 @@ Route::get('/', function () {
 // Magic Link Authentication
 Route::middleware('guest')->group(function () {
     Route::get('/auth/magic-link', [MagicLinkController::class, 'create'])->name('magic-link.form');
-    Route::post('/auth/magic-link', [MagicLinkController::class, 'store'])->name('magic-link.request');
+    Route::post('/auth/magic-link', [MagicLinkController::class, 'store'])
+        ->middleware('throttle:5,1') // 5 requests per minute
+        ->name('magic-link.request');
 });
 Route::get('/auth/magic-link/verify/{user}', [MagicLinkController::class, 'verify'])->name('magic-link.verify');
 Route::get('/auth/magic-link/verify-new', [MagicLinkController::class, 'verifyNew'])->name('magic-link.verify-new');

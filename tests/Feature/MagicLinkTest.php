@@ -224,6 +224,5 @@ test('throttles magic link requests', function () {
     ]);
     
     // Note: Rate limiting test may need adjustment for testing environment
-    // $response->assertStatus(429); // Too Many Requests
-    $this->assertTrue(true); // Skip for now
+    $response->assertStatus(429); // Too Many Requests
 });
