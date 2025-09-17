@@ -28,6 +28,9 @@ class MacOSUpdateNotification extends Mailable implements ShouldQueue
         $this->subscriber = $subscriber;
         $this->release = $release;
         $this->deadline = $release->getDeadlineDate($subscriber->days_to_install);
+        
+        // Set the locale for this notification
+        app()->setLocale($subscriber->language);
     }
 
     /**
@@ -38,7 +41,10 @@ class MacOSUpdateNotification extends Mailable implements ShouldQueue
         $replyTo = $this->subscriber->admin?->email ?? config('mail.from.address');
         
         return new Envelope(
-            subject: "macOS Update Required: {$this->release->major_version} {$this->release->version}",
+            subject: __('emails.macos_update.subject', [
+                'version' => $this->release->major_version,
+                'build' => $this->release->version
+            ]),
             replyTo: [$replyTo],
         );
     }
@@ -57,6 +63,7 @@ class MacOSUpdateNotification extends Mailable implements ShouldQueue
                 'daysRemaining' => (int) Carbon::now()->diffInDays($this->deadline, false),
                 'unsubscribeUrl' => $this->subscriber->getUnsubscribeUrl(),
                 'versionChangeUrl' => $this->subscriber->getVersionChangeUrl(),
+                'languageChangeUrl' => $this->subscriber->getLanguageChangeUrl(),
                 'adminEmail' => $this->subscriber->admin?->email,
             ]
         );

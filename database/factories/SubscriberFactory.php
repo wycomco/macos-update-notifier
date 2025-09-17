@@ -27,6 +27,7 @@ class SubscriberFactory extends Factory
             'subscribed_versions' => $selectedVersions,
             'days_to_install' => fake()->numberBetween(7, 60),
             'is_subscribed' => true,
+            'language' => config('subscriber_languages.default', 'en'),
             'admin_id' => \App\Models\User::factory(),
         ];
     }

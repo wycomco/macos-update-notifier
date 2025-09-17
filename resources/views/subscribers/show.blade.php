@@ -104,6 +104,13 @@
                                 </div>
                                 
                                 <div class="p-4 bg-white/5 rounded-xl border border-white/10">
+                                    <label class="text-slate-400 text-sm block mb-1">Preferred Language</label>
+                                    <span class="text-white font-medium">
+                                        {{ $subscriber->getLanguageFlag() }} {{ $subscriber->getLanguageDisplayName() }}
+                                    </span>
+                                </div>
+                                
+                                <div class="p-4 bg-white/5 rounded-xl border border-white/10">
                                     <label class="text-slate-400 text-sm block mb-1">Member Since</label>
                                     <span class="text-white font-medium">{{ $subscriber->created_at->format('F j, Y') }}</span>
                                 </div>

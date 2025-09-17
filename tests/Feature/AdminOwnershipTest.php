@@ -114,6 +114,7 @@ test('regular admin cannot see admin ownership in subscriber edit page', functio
 test('new subscribers are assigned to creating admin', function () {
     $response = $this->actingAs($this->regularAdmin)->post(route('subscribers.store'), [
         'email' => 'newsubscriber@example.com',
+        'macos_version' => 'Sonoma',
         'subscribed_versions' => ['macOS 14'],
         'days_to_install' => 30,
     ]);

@@ -12,3 +12,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CHANGELOG file to track notable changes to this project
 - Magic Link: Added request throttling
 - Magic Link: Added captcha and other security measurements
+- Support for different languages for subscriptions

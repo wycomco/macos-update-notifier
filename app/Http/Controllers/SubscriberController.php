@@ -101,7 +101,9 @@ class SubscriberController extends Controller
     public function create()
     {
         $availableVersions = $this->getAvailableVersions();
-        return view('subscribers.create', compact('availableVersions'));
+        
+        $supportedLanguages = config('subscriber_languages.supported', []);
+        return view('subscribers.create', compact('availableVersions', 'supportedLanguages'));
     }
 
     /**
@@ -111,14 +113,22 @@ class SubscriberController extends Controller
     {
         $availableVersions = $this->getAvailableVersions();
         
-        $validated = $request->validate([
-            'email' => ['required', 'email', 'unique:subscribers,email'],
+                $validated = $request->validate([
+            'email' => ['required', 'email', 'max:255', 'unique:subscribers,email'],
+            'macos_version' => ['required', 'string'],
             'subscribed_versions' => ['required', 'array', 'min:1'],
-            'subscribed_versions.*' => ['string', Rule::in($availableVersions)],
-            'days_to_install' => ['required', 'integer', 'min:1', 'max:365']
+            'subscribed_versions.*' => ['string', 'in:' . implode(',', $availableVersions)],
+            'days_to_install' => ['required', 'integer', 'min:1', 'max:365'],
+            'language' => config('subscriber_languages.validation_rule', 'required|string|in:en,de,fr,es'),
         ]);
 
         $validated['admin_id'] = Auth::id();
+        
+        // Apply default language if none specified
+        if (empty($validated['language'])) {
+            $validated['language'] = config('subscriber_languages.default', 'en');
+        }
+        
         Subscriber::create($validated);
 
         return redirect()->route('subscribers.index')
@@ -148,7 +158,8 @@ class SubscriberController extends Controller
         $this->authorizeSubscriber($subscriber);
         
         $availableVersions = $this->getAvailableVersions();
-        return view('subscribers.edit', compact('subscriber', 'availableVersions'));
+        $supportedLanguages = config('subscriber_languages.supported', []);
+        return view('subscribers.edit', compact('subscriber', 'availableVersions', 'supportedLanguages'));
     }
 
     /**
@@ -162,11 +173,22 @@ class SubscriberController extends Controller
         
         $validated = $request->validate([
             'email' => ['required', 'email', Rule::unique('subscribers', 'email')->ignore($subscriber->id)],
+            'language' => config('subscriber_languages.validation_rule', 'required|string|in:en,de,fr,es'),
             'macos_version' => ['required', 'string'],
             'subscribed_versions' => ['required', 'array', 'min:1'],
             'subscribed_versions.*' => ['string', Rule::in($availableVersions)],
             'days_to_install' => ['required', 'integer', 'min:1', 'max:365']
         ]);
+
+        // Apply default language if none specified
+        if (empty($validated['language'])) {
+            $validated['language'] = config('subscriber_languages.default', 'en');
+        }
+
+        // Check if language changed and log the action
+        if ($subscriber->language !== $validated['language']) {
+            $subscriber->updateLanguage($validated['language']);
+        }
 
         // Check if macOS version changed and log the action
         if ($subscriber->macos_version !== $validated['macos_version']) {

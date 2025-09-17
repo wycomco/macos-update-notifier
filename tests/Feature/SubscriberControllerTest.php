@@ -34,6 +34,7 @@ test('can create new subscriber', function () {
     
     $subscriberData = [
         'email' => 'new@example.com',
+        'macos_version' => 'Sonoma',
         'subscribed_versions' => ['macOS 14', 'macOS 15'],
         'days_to_install' => 30,
     ];
@@ -260,6 +261,7 @@ test('validation accepts any version that exists in releases', function () {
     
     $subscriberData = [
         'email' => 'test@example.com',
+        'macos_version' => 'Ventura',
         'subscribed_versions' => ['macOS 13'],
         'days_to_install' => 30,
     ];
@@ -276,6 +278,7 @@ test('validation rejects versions that do not exist in releases', function () {
     
     $subscriberData = [
         'email' => 'test@example.com',
+        'macos_version' => 'Monterey',
         'subscribed_versions' => ['macOS 16'], // This version doesn't exist
         'days_to_install' => 30,
     ];
@@ -289,6 +292,7 @@ test('fallback versions work when no releases exist', function () {
     // Don't create any releases, should fall back to default versions
     $subscriberData = [
         'email' => 'test@example.com',
+        'macos_version' => 'Big Sur',
         'subscribed_versions' => ['macOS 14'], // Should work because of fallback
         'days_to_install' => 30,
     ];

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -14,6 +15,7 @@ class Subscriber extends Model
     
     protected $fillable = [
         'email',
+        'language',
         'macos_version',
         'subscribed_versions',
         'days_to_install',
@@ -40,6 +42,9 @@ class Subscriber extends Model
             }
             if (is_null($subscriber->is_subscribed)) {
                 $subscriber->is_subscribed = true;
+            }
+            if (!$subscriber->language) {
+                $subscriber->language = config('subscriber_languages.default', 'en');
             }
         });
         
@@ -175,6 +180,69 @@ class Subscriber extends Model
     public function getVersionChangeUrl(): string
     {
         return route('public.version-change', $this->unsubscribe_token);
+    }
+
+    /**
+     * Generate language change URL
+     */
+    public function getLanguageChangeUrl(): string
+    {
+        return route('public.language-change', $this->unsubscribe_token);
+    }
+
+    /**
+     * Get the supported languages
+     */
+    public static function getSupportedLanguages(): array
+    {
+        return config('subscriber_languages.supported', []);
+    }
+
+    /**
+     * Get the language display name
+     */
+    public function getLanguageDisplayName(): string
+    {
+        $languages = self::getSupportedLanguages();
+        return $languages[$this->language]['name'] ?? 'Unknown';
+    }
+
+    /**
+     * Get the language flag emoji
+     */
+    public function getLanguageFlag(): string
+    {
+        $languages = self::getSupportedLanguages();
+        return $languages[$this->language]['flag'] ?? '';
+    }
+
+    /**
+     * Get the language display name with flag
+     */
+    public function getLanguageDisplayNameWithFlag(): string
+    {
+        $languages = self::getSupportedLanguages();
+        if (isset($languages[$this->language])) {
+            return $languages[$this->language]['flag'] . ' ' . $languages[$this->language]['name'];
+        }
+        return $this->language ?? 'Unknown';
+    }
+
+    /**
+     * Update the subscriber's language and log the action
+     */
+    public function updateLanguage(string $newLanguage): void
+    {
+        $oldLanguage = $this->language;
+        $this->update(['language' => $newLanguage]);
+        
+        $this->actions()->create([
+            'action' => 'language_changed',
+            'data' => [
+                'old_language' => $oldLanguage,
+                'new_language' => $newLanguage,
+            ],
+        ]);
     }
 
     /**

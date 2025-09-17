@@ -5,9 +5,19 @@ namespace App\Http\Controllers;
 use App\Models\Release;
 use App\Models\Subscriber;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 
 class PublicSubscriberController extends Controller
 {
+    /**
+     * Set the application locale based on subscriber's language
+     */
+    private function setLocaleForSubscriber(Subscriber $subscriber): void
+    {
+        if ($subscriber->language && in_array($subscriber->language, array_keys(config('subscriber_languages.supported', [])))) {
+            App::setLocale($subscriber->language);
+        }
+    }
     /**
      * Show unsubscribe confirmation page
      */
@@ -18,6 +28,8 @@ class PublicSubscriberController extends Controller
         if (!$subscriber) {
             abort(404, 'Invalid unsubscribe link');
         }
+        
+        $this->setLocaleForSubscriber($subscriber);
         
         if (!$subscriber->isActive()) {
             return view('public.already-unsubscribed', compact('subscriber'));
@@ -37,6 +49,8 @@ class PublicSubscriberController extends Controller
             abort(404, 'Invalid unsubscribe link');
         }
         
+        $this->setLocaleForSubscriber($subscriber);
+        
         if ($subscriber->isActive()) {
             $subscriber->unsubscribe();
         }
@@ -54,6 +68,8 @@ class PublicSubscriberController extends Controller
         if (!$subscriber) {
             abort(404, 'Invalid link');
         }
+        
+        $this->setLocaleForSubscriber($subscriber);
         
         if (!$subscriber->isActive()) {
             return view('public.subscriber-inactive', compact('subscriber'));
@@ -82,6 +98,8 @@ class PublicSubscriberController extends Controller
         if (!$subscriber) {
             abort(404, 'Invalid link');
         }
+        
+        $this->setLocaleForSubscriber($subscriber);
         
         if (!$subscriber->isActive()) {
             return view('public.subscriber-inactive', compact('subscriber'));
@@ -115,5 +133,56 @@ class PublicSubscriberController extends Controller
         }
         
         return redirect()->back()->with('success', 'Your version preferences have been updated.');
+    }
+
+    /**
+     * Show language change form
+     */
+    public function showLanguageChange(string $token)
+    {
+        $subscriber = Subscriber::where('unsubscribe_token', $token)->first();
+        
+        if (!$subscriber) {
+            abort(404, 'Invalid link');
+        }
+        
+        $this->setLocaleForSubscriber($subscriber);
+        
+        if (!$subscriber->isActive()) {
+            return view('public.subscriber-inactive', compact('subscriber'));
+        }
+        
+        $supportedLanguages = config('subscriber_languages.supported', []);
+        
+        return view('public.change-language', compact('subscriber', 'supportedLanguages'));
+    }
+
+    /**
+     * Process language change
+     */
+    public function changeLanguage(Request $request, string $token)
+    {
+        $subscriber = Subscriber::where('unsubscribe_token', $token)->first();
+        
+        if (!$subscriber) {
+            abort(404, 'Invalid link');
+        }
+        
+        $this->setLocaleForSubscriber($subscriber);
+        
+        if (!$subscriber->isActive()) {
+            return view('public.subscriber-inactive', compact('subscriber'));
+        }
+        
+        $request->validate([
+            'language' => config('subscriber_languages.validation_rule', 'required|string|in:en,de,fr,es'),
+        ]);
+        
+        $subscriber->updateLanguage($request->language);
+        
+        // Update locale for the success message
+        $this->setLocaleForSubscriber($subscriber);
+        
+        return redirect()->back()->with('success', 'Your language preference has been updated.');
     }
 }

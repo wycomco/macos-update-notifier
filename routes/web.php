@@ -28,6 +28,8 @@ Route::get('/unsubscribe/{token}', [PublicSubscriberController::class, 'showUnsu
 Route::post('/unsubscribe/{token}', [PublicSubscriberController::class, 'unsubscribe'])->name('public.unsubscribe.confirm');
 Route::get('/change-version/{token}', [PublicSubscriberController::class, 'showVersionChange'])->name('public.version-change');
 Route::post('/change-version/{token}', [PublicSubscriberController::class, 'changeVersion'])->name('public.version-change.update');
+Route::get('/change-language/{token}', [PublicSubscriberController::class, 'showLanguageChange'])->name('public.language-change');
+Route::post('/change-language/{token}', [PublicSubscriberController::class, 'changeLanguage'])->name('public.language-change.update');
 
 // Authenticated routes
 Route::middleware('auth')->group(function () {
