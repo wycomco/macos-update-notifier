@@ -347,7 +347,7 @@ php artisan queue:work
    - **Days to Install**: Set notification deadline (1-365 days)
    - **Language**: Choose notification language (optional, defaults to English)
 
-##### CSV Format Example:
+##### CSV Format Example
 
 ```csv
 email,subscribed_versions,days_to_install
@@ -514,6 +514,7 @@ The system uses SQLite by default, requiring minimal maintenance. For high-volum
 If notifications aren't being sent:
 
 1. **Check queue worker status**:
+
    ```bash
    # View queue status
    php artisan queue:status
@@ -523,17 +524,20 @@ If notifications aren't being sent:
    ```
 
 2. **Test email sending manually**:
+
    ```bash
    # Send a test notification
    php artisan macos:check-updates --test-email=your-email@company.com
    ```
 
 3. **Restart queue worker**:
+
    ```bash
    php artisan queue:restart
    ```
 
 4. **Check worker logs**:
+
    ```bash
    # Application logs
    tail -f storage/logs/laravel.log

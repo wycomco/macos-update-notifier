@@ -44,6 +44,8 @@ Route::middleware('auth')->group(function () {
     
     // Subscriber management
     Route::resource('subscribers', SubscriberController::class);
+    Route::get('/subscribers/{subscriber}/resubscribe', [SubscriberController::class, 'showResubscribe'])->name('subscribers.resubscribe.form');
+    Route::post('/subscribers/{subscriber}/resubscribe', [SubscriberController::class, 'resubscribe'])->name('subscribers.resubscribe');
     
     // Subscriber import (available to all authenticated users)
     Route::get('/subscribers-import', [SubscriberImportController::class, 'create'])->name('subscribers.import');

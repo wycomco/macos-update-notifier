@@ -147,6 +147,82 @@
                     </div>
                 </div>
 
+                <!-- Subscription Status -->
+                <div class="lg:col-span-2 group relative mb-8">
+                    <div class="absolute inset-0 bg-gradient-to-br from-{{ $subscriber->isActive() ? 'green' : 'red' }}-500/10 to-{{ $subscriber->isActive() ? 'emerald' : 'pink' }}-600/10 rounded-2xl blur-xl"></div>
+                    <div class="relative bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-6">
+                        
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="flex items-center gap-3">
+                                <div class="p-2 bg-{{ $subscriber->isActive() ? 'green' : 'red' }}-500/20 rounded-lg">
+                                    @if($subscriber->isActive())
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                        </svg>
+                                    @else
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                                        </svg>
+                                    @endif
+                                </div>
+                                <h3 class="text-xl font-bold text-white">Subscription Status</h3>
+                            </div>
+                            
+                            @if(!$subscriber->isActive())
+                                <!-- Re-enable Button -->
+                                <a href="{{ route('subscribers.resubscribe.form', $subscriber) }}" 
+                                   class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-medium rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+                                    </svg>
+                                    Re-enable Subscription
+                                </a>
+                            @endif
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="p-4 bg-white/5 rounded-xl border border-white/10">
+                                <label class="text-slate-400 text-sm block mb-1">Current Status</label>
+                                @if($subscriber->isActive())
+                                    <span class="inline-flex items-center gap-2 text-green-400 font-medium">
+                                        <div class="w-2 h-2 bg-green-400 rounded-full"></div>
+                                        Active - Receiving Notifications
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center gap-2 text-red-400 font-medium">
+                                        <div class="w-2 h-2 bg-red-400 rounded-full"></div>
+                                        Unsubscribed
+                                    </span>
+                                @endif
+                            </div>
+                            
+                            @if($subscriber->unsubscribed_at)
+                                <div class="p-4 bg-white/5 rounded-xl border border-white/10">
+                                    <label class="text-slate-400 text-sm block mb-1">Unsubscribed On</label>
+                                    <span class="text-white font-medium">{{ $subscriber->unsubscribed_at->format('F j, Y \a\t g:i A') }}</span>
+                                </div>
+                            @endif
+                        </div>
+
+                        @if(!$subscriber->isActive())
+                            <div class="mt-6 p-4 bg-yellow-500/10 rounded-xl border border-yellow-500/20">
+                                <div class="flex items-start gap-3">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-yellow-400 mt-0.5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                    </svg>
+                                    <div>
+                                        <h4 class="text-yellow-400 font-semibold mb-1">Unsubscribed User</h4>
+                                        <p class="text-yellow-200 text-sm">
+                                            This subscriber has unsubscribed and is not receiving notifications. 
+                                            Only re-enable their subscription if you have obtained explicit consent from them to do so.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
                 <!-- Related Releases -->
                 <div class="group relative">
                     <div class="absolute inset-0 bg-gradient-to-br from-green-500/10 to-emerald-600/10 rounded-2xl blur-xl"></div>

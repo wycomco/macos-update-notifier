@@ -217,6 +217,66 @@ class SubscriberController extends Controller
     }
 
     /**
+     * Show the form for re-enabling subscription for an unsubscribed subscriber
+     */
+    public function showResubscribe(Subscriber $subscriber)
+    {
+        $this->authorizeSubscriber($subscriber);
+        
+        // Only allow resubscribe form for unsubscribed users
+        if ($subscriber->isActive()) {
+            return redirect()->route('subscribers.show', $subscriber)
+                ->with('info', 'This subscriber is already active.');
+        }
+        
+        return view('subscribers.resubscribe', compact('subscriber'));
+    }
+
+    /**
+     * Re-enable subscription for an unsubscribed subscriber
+     */
+    public function resubscribe(Request $request, Subscriber $subscriber)
+    {
+        $this->authorizeSubscriber($subscriber);
+        
+        // Validate consent requirements
+        $validated = $request->validate([
+            'legal_confirmation' => ['required', 'accepted'],
+            'consent_method' => ['required', 'string', 'in:email,phone,in_person,support_ticket,written_form,website_form,other'],
+            'consent_notes' => ['nullable', 'string', 'max:1000'],
+        ], [
+            'legal_confirmation.required' => 'You must confirm you have legal permission to re-enable this subscription.',
+            'legal_confirmation.accepted' => 'You must confirm you have legal permission to re-enable this subscription.',
+            'consent_method.required' => 'You must specify how consent was obtained.',
+            'consent_method.in' => 'Please select a valid consent method.',
+        ]);
+        
+        // Re-enable the subscription with proper logging
+        $subscriber->resubscribe(
+            \Illuminate\Support\Facades\Auth::user(),
+            $validated['consent_method'],
+            $validated['consent_notes'] ?? null
+        );
+        
+        // Log additional consent information
+        $subscriber->actions()->create([
+            'action' => 'resubscribe_consent_logged',
+            'admin_id' => \Illuminate\Support\Facades\Auth::id(),
+            'details' => json_encode([
+                'consent_method' => $validated['consent_method'],
+                'consent_notes' => $validated['consent_notes'] ?? null,
+                'legal_confirmation' => true,
+                'admin_name' => \Illuminate\Support\Facades\Auth::user()->name,
+                'admin_email' => \Illuminate\Support\Facades\Auth::user()->email,
+                'resubscribed_at' => now()->toISOString(),
+            ]),
+        ]);
+
+        return redirect()->route('subscribers.show', $subscriber)
+            ->with('success', 'Subscription has been successfully re-enabled.');
+    }
+
+    /**
      * Authorize access to subscriber
      */
     private function authorizeSubscriber(Subscriber $subscriber)

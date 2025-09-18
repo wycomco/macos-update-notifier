@@ -116,6 +116,35 @@ class Subscriber extends Model
     }
 
     /**
+     * Re-enable/resubscribe the subscriber
+     * Note: This should only be done with explicit user consent to comply with email regulations
+     */
+    public function resubscribe(User $admin, string $consentMethod, ?string $consentNotes = null): void
+    {
+        $this->update([
+            'unsubscribed_at' => null,
+            'is_subscribed' => true
+        ]);
+        
+        // Create comprehensive audit log
+        $details = [
+            'admin_name' => $admin->name,
+            'admin_email' => $admin->email,
+            'admin_id' => $admin->id,
+            'consent_method' => $consentMethod,
+            'consent_notes' => $consentNotes,
+            'resubscribed_at' => now()->toDateTimeString(),
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+        ];
+        
+        $this->actions()->create([
+            'action' => 'resubscribed',
+            'data' => $details,
+        ]);
+    }
+
+    /**
      * Update subscribed versions and log the action
      */
     public function updateVersions(array $versions): void
