@@ -118,24 +118,19 @@ test('email content contains translated text for spanish', function () {
     App::setLocale($originalLocale);
 });
 
-test('email sets correct locale based on subscriber language', function () {
+test('email implements preferred locale interface for queue processing', function () {
     $subscriber = Subscriber::factory()->create(['language' => 'de']);
     $release = Release::factory()->create();
     
     $mailable = new MacOSUpdateNotification($subscriber, $release);
     
-    // The mailable should set the locale in its constructor
-    $originalLocale = App::getLocale();
+    // The mailable should implement HasLocalePreference for proper queue handling
+    expect($mailable)->toBeInstanceOf(\Illuminate\Contracts\Translation\HasLocalePreference::class);
     
+    // The preferredLocale method should return the subscriber's language
+    expect($mailable->preferredLocale())->toBe('de');
+    
+    // The subscriber data should be correctly passed
     $content = $mailable->content();
-    
-    // The locale should be set to German during email building
-    // (This tests the logic in the MacOSUpdateNotification constructor)
     expect($content->with['subscriber']->language)->toBe('de');
-    
-    // Note: Locale setting in constructor affects the current test execution
-    expect(App::getLocale())->toBe('de');
-    
-    // Restore locale for other tests
-    App::setLocale($originalLocale);
 });

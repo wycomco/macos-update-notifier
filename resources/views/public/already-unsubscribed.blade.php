@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Already Unsubscribed - {{ config('app.name', 'Laravel') }}</title>
+    <title>{{ __('public.already_unsubscribed.title') }} - {{ config('app.name', 'Laravel') }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="font-sans antialiased bg-gray-100 dark:bg-gray-900">
@@ -16,10 +16,10 @@
                     </svg>
                 </div>
                 <h2 class="mt-6 text-3xl font-extrabold text-gray-900 dark:text-white">
-                    Already Unsubscribed
+                    {{ __('public.already_unsubscribed.title') }}
                 </h2>
                 <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                    This email address is already unsubscribed
+                    {{ __('public.already_unsubscribed.subtitle') }}
                 </p>
             </div>
         </div>
@@ -28,17 +28,24 @@
             <div class="bg-white dark:bg-gray-800 py-8 px-4 shadow sm:rounded-lg sm:px-10">
                 <div class="text-center">
                     <p class="text-gray-600 dark:text-gray-400 mb-6">
-                        {{ $subscriber->email }} was unsubscribed on {{ $subscriber->unsubscribed_at->format('M j, Y \a\t g:i A') }}.
+                        {!! __('public.already_unsubscribed.unsubscribed_on', [
+                            'email' => $subscriber->email,
+                            'date' => $subscriber->unsubscribed_at->format('M j, Y \a\t g:i A')
+                        ]) !!}
                     </p>
                     
                     <div class="text-xs text-gray-500 dark:text-gray-400">
-                        <p>Want to resubscribe? Contact 
-                        @if($subscriber->admin)
-                            your admin at {{ $subscriber->admin->email }}
-                        @else
-                            support
-                        @endif
-                        for assistance.</p>
+                        <p>
+                            @if($subscriber->admin)
+                                {!! __('public.already_unsubscribed.want_resubscribe', [
+                                    'contact' => __('public.already_unsubscribed.your_admin', ['email' => $subscriber->admin->email])
+                                ]) !!}
+                            @else
+                                {!! __('public.already_unsubscribed.want_resubscribe', [
+                                    'contact' => __('public.already_unsubscribed.support')
+                                ]) !!}
+                            @endif
+                        </p>
                     </div>
                 </div>
             </div>

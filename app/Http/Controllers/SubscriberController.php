@@ -115,7 +115,6 @@ class SubscriberController extends Controller
         
                 $validated = $request->validate([
             'email' => ['required', 'email', 'max:255', 'unique:subscribers,email'],
-            'macos_version' => ['required', 'string'],
             'subscribed_versions' => ['required', 'array', 'min:1'],
             'subscribed_versions.*' => ['string', 'in:' . implode(',', $availableVersions)],
             'days_to_install' => ['required', 'integer', 'min:1', 'max:365'],
@@ -174,7 +173,6 @@ class SubscriberController extends Controller
         $validated = $request->validate([
             'email' => ['required', 'email', Rule::unique('subscribers', 'email')->ignore($subscriber->id)],
             'language' => config('subscriber_languages.validation_rule', 'required|string|in:en,de,fr,es'),
-            'macos_version' => ['required', 'string'],
             'subscribed_versions' => ['required', 'array', 'min:1'],
             'subscribed_versions.*' => ['string', Rule::in($availableVersions)],
             'days_to_install' => ['required', 'integer', 'min:1', 'max:365']
@@ -190,11 +188,6 @@ class SubscriberController extends Controller
             $subscriber->updateLanguage($validated['language']);
         }
 
-        // Check if macOS version changed and log the action
-        if ($subscriber->macos_version !== $validated['macos_version']) {
-            $subscriber->updateMacOSVersion($validated['macos_version']);
-        }
-        
         // Check if subscribed versions changed and log the action
         if ($subscriber->subscribed_versions !== $validated['subscribed_versions']) {
             $subscriber->updateVersions($validated['subscribed_versions']);

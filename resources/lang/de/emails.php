@@ -19,7 +19,7 @@ return [
             'days_overdue' => 'Tage überfällig:',
         ],
         'action_required_title' => '📋 Aktion Erforderlich',
-        'action_text' => 'Bitte installieren Sie das macOS Update **:version** so schnell wie möglich.',
+        'action_text' => 'Bitte installieren Sie das macOS Update <strong>:version</strong> so schnell wie möglich.',
         'install_steps_title' => 'So installieren Sie das Update:',
         'install_steps' => [
             'Klicken Sie auf das Apple-Menü 🍎 in der oberen linken Ecke',
@@ -44,7 +44,7 @@ return [
             'Neue Funktionen und Features',
         ],
         'need_help' => 'Brauchen Sie Hilfe?',
-        'need_help_with_admin' => 'Kontaktieren Sie Ihren Administrator **:admin_name** (:admin_email), wenn Sie Fragen zu diesem Update haben oder Hilfe bei der Installation benötigen.',
+        'need_help_with_admin' => 'Kontaktieren Sie Ihren Administrator <strong>:admin_name</strong> (:admin_email), wenn Sie Fragen zu diesem Update haben oder Hilfe bei der Installation benötigen.',
         'need_help_without_admin' => 'Kontaktieren Sie Ihren IT-Administrator, wenn Sie Fragen zu diesem Update haben oder Hilfe bei der Installation benötigen.',
         'footer' => [
             'automated_notification' => 'Dies ist eine automatische Benachrichtigung vom macOS Update Benachrichtigungssystem.',

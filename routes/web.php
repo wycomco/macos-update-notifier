@@ -31,6 +31,11 @@ Route::post('/change-version/{token}', [PublicSubscriberController::class, 'chan
 Route::get('/change-language/{token}', [PublicSubscriberController::class, 'showLanguageChange'])->name('public.language-change');
 Route::post('/change-language/{token}', [PublicSubscriberController::class, 'changeLanguage'])->name('public.language-change.update');
 
+// Success pages for public subscriber actions
+Route::get('/unsubscribed/{token}', [PublicSubscriberController::class, 'showUnsubscribed'])->name('public.unsubscribed');
+Route::get('/language-changed/{token}', [PublicSubscriberController::class, 'showLanguageChanged'])->name('public.language-changed');
+Route::get('/version-changed/{token}', [PublicSubscriberController::class, 'showVersionChanged'])->name('public.version-changed');
+
 // Authenticated routes
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');

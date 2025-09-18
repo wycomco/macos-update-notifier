@@ -6,13 +6,15 @@ use App\Models\Subscriber;
 use App\Models\Release;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Contracts\Translation\HasLocalePreference;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\App;
 
-class MacOSUpdateNotification extends Mailable implements ShouldQueue
+class MacOSUpdateNotification extends Mailable implements ShouldQueue, HasLocalePreference
 {
     use Queueable, SerializesModels;
 
@@ -28,9 +30,15 @@ class MacOSUpdateNotification extends Mailable implements ShouldQueue
         $this->subscriber = $subscriber;
         $this->release = $release;
         $this->deadline = $release->getDeadlineDate($subscriber->days_to_install);
-        
-        // Set the locale for this notification
-        app()->setLocale($subscriber->language);
+        $this->locale = $this->preferredLocale();
+    }
+
+    /**
+     * Get the preferred locale for this notification.
+     */
+    public function preferredLocale(): string
+    {
+        return $this->subscriber->language;
     }
 
     /**

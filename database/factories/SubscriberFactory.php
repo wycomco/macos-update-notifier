@@ -17,13 +17,11 @@ class SubscriberFactory extends Factory
     public function definition(): array
     {
         $versions = ['macOS 14', 'macOS 15'];
-        $macosVersions = ['Sonoma', 'Monterey', 'Big Sur', 'Ventura'];
         $numVersions = fake()->numberBetween(1, 2);
         $selectedVersions = collect($versions)->random($numVersions)->values()->toArray();
         
         return [
             'email' => fake()->unique()->safeEmail(),
-            'macos_version' => collect($macosVersions)->random(),
             'subscribed_versions' => $selectedVersions,
             'days_to_install' => fake()->numberBetween(7, 60),
             'is_subscribed' => true,

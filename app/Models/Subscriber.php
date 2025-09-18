@@ -16,7 +16,6 @@ class Subscriber extends Model
     protected $fillable = [
         'email',
         'language',
-        'macos_version',
         'subscribed_versions',
         'days_to_install',
         'admin_id',
@@ -54,7 +53,6 @@ class Subscriber extends Model
                 'action' => 'subscribed',
                 'data' => [
                     'subscribed_at' => $subscriber->created_at,
-                    'macos_version' => $subscriber->macos_version,
                     'subscribed_versions' => $subscriber->subscribed_versions,
                 ],
             ]);
@@ -130,23 +128,6 @@ class Subscriber extends Model
             'data' => [
                 'old_versions' => $oldVersions,
                 'new_versions' => $versions,
-            ],
-        ]);
-    }
-
-    /**
-     * Update macOS version and log the action
-     */
-    public function updateMacOSVersion(string $newVersion): void
-    {
-        $oldVersion = $this->macos_version;
-        $this->update(['macos_version' => $newVersion]);
-        
-        $this->actions()->create([
-            'action' => 'version_changed',
-            'data' => [
-                'old_version' => $oldVersion,
-                'new_version' => $newVersion,
             ],
         ]);
     }

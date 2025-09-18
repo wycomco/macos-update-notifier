@@ -19,7 +19,7 @@ return [
             'days_overdue' => 'Jours de retard :',
         ],
         'action_required_title' => '📋 Action Requise',
-        'action_text' => 'Veuillez installer la mise à jour macOS **:version** dès que possible.',
+        'action_text' => 'Veuillez installer la mise à jour macOS <strong>:version</strong> dès que possible.',
         'install_steps_title' => 'Pour installer la mise à jour :',
         'install_steps' => [
             'Cliquez sur le menu Apple 🍎 dans le coin supérieur gauche',
@@ -44,7 +44,7 @@ return [
             'Nouvelles fonctionnalités',
         ],
         'need_help' => 'Besoin d\'aide ?',
-        'need_help_with_admin' => 'Contactez votre administrateur **:admin_name** (:admin_email) si vous avez des questions sur cette mise à jour ou besoin d\'aide pour l\'installation.',
+        'need_help_with_admin' => 'Contactez votre administrateur <strong>:admin_name</strong> (:admin_email) si vous avez des questions sur cette mise à jour ou besoin d\'aide pour l\'installation.',
         'need_help_without_admin' => 'Contactez votre administrateur informatique si vous avez des questions sur cette mise à jour ou besoin d\'aide pour l\'installation.',
         'footer' => [
             'automated_notification' => 'Ceci est une notification automatique du système de notification de mise à jour macOS.',

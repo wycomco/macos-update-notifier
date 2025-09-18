@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Release;
 use App\Models\Subscriber;
 use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 use Illuminate\Support\Facades\App;
 
 class PublicSubscriberController extends Controller
@@ -18,6 +20,7 @@ class PublicSubscriberController extends Controller
             App::setLocale($subscriber->language);
         }
     }
+    
     /**
      * Show unsubscribe confirmation page
      */
@@ -53,9 +56,58 @@ class PublicSubscriberController extends Controller
         
         if ($subscriber->isActive()) {
             $subscriber->unsubscribe();
+            return redirect()->route('public.unsubscribed', $token)->with('success', __('public.unsubscribe.success'));
         }
         
         return redirect()->back()->with('success', 'You have been successfully unsubscribed.');
+    }
+
+    /**
+     * Show unsubscribed confirmation page
+     */
+    public function showUnsubscribed(string $token): View
+    {
+        $subscriber = Subscriber::where('unsubscribe_token', $token)->first();
+
+        if (!$subscriber) {
+            abort(404, 'Invalid link');
+        }
+
+        $this->setLocaleForSubscriber($subscriber);
+
+        return view('public.unsubscribed');
+    }
+
+    /**
+     * Show version changed confirmation page
+     */
+    public function showVersionChanged(string $token): View
+    {
+        $subscriber = Subscriber::where('unsubscribe_token', $token)->first();
+
+        if (!$subscriber) {
+            abort(404, 'Invalid link');
+        }
+
+        $this->setLocaleForSubscriber($subscriber);
+
+        return view('public.version-changed');
+    }
+
+    /**
+     * Show language changed confirmation page
+     */
+    public function showLanguageChanged(string $token): View
+    {
+        $subscriber = Subscriber::where('unsubscribe_token', $token)->first();
+
+        if (!$subscriber) {
+            abort(404, 'Invalid link');
+        }
+
+        $this->setLocaleForSubscriber($subscriber);
+
+        return view('public.language-changed');
     }
 
     /**
@@ -75,12 +127,12 @@ class PublicSubscriberController extends Controller
             return view('public.subscriber-inactive', compact('subscriber'));
         }
         
+        // Handle subscribed versions update
         $availableVersions = Release::distinct('major_version')
             ->orderBy('major_version')
             ->pluck('major_version')
             ->toArray();
             
-        // Fallback if no releases
         if (empty($availableVersions)) {
             $availableVersions = ['macOS 14', 'macOS 15'];
         }
@@ -89,7 +141,7 @@ class PublicSubscriberController extends Controller
     }
 
     /**
-     * Process version change
+     * Update subscriber's version preference
      */
     public function changeVersion(Request $request, string $token)
     {
@@ -105,34 +157,24 @@ class PublicSubscriberController extends Controller
             return view('public.subscriber-inactive', compact('subscriber'));
         }
         
-        // Handle both macos_version and subscribed_versions for backwards compatibility
-        if ($request->has('macos_version')) {
-            $validMacOSVersions = ['Sonoma', 'Monterey', 'Big Sur', 'Ventura'];
+        // Handle subscribed versions update
+        $availableVersions = Release::distinct('major_version')
+            ->orderBy('major_version')
+            ->pluck('major_version')
+            ->toArray();
             
-            $request->validate([
-                'macos_version' => ['required', 'string', 'in:' . implode(',', $validMacOSVersions)],
-            ]);
-            
-            $subscriber->updateMacOSVersion($request->macos_version);
-        } else {
-            $availableVersions = Release::distinct('major_version')
-                ->orderBy('major_version')
-                ->pluck('major_version')
-                ->toArray();
-                
-            if (empty($availableVersions)) {
-                $availableVersions = ['macOS 14', 'macOS 15'];
-            }
-            
-            $request->validate([
-                'subscribed_versions' => ['required', 'array', 'min:1'],
-                'subscribed_versions.*' => ['string', 'in:' . implode(',', $availableVersions)],
-            ]);
-            
-            $subscriber->updateVersions($request->subscribed_versions);
+        if (empty($availableVersions)) {
+            $availableVersions = ['macOS 14', 'macOS 15'];
         }
         
-        return redirect()->back()->with('success', 'Your version preferences have been updated.');
+        $request->validate([
+            'subscribed_versions' => ['required', 'array', 'min:1'],
+            'subscribed_versions.*' => ['string', 'in:' . implode(',', $availableVersions)],
+        ]);
+        
+        $subscriber->updateVersions($request->subscribed_versions);
+        
+        return redirect()->route('public.version-changed', $token)->with('success', __('public.version_change.success'));
     }
 
     /**
@@ -158,7 +200,7 @@ class PublicSubscriberController extends Controller
     }
 
     /**
-     * Process language change
+     * Update subscriber's language preference
      */
     public function changeLanguage(Request $request, string $token)
     {
@@ -183,6 +225,6 @@ class PublicSubscriberController extends Controller
         // Update locale for the success message
         $this->setLocaleForSubscriber($subscriber);
         
-        return redirect()->back()->with('success', 'Your language preference has been updated.');
+        return redirect()->route('public.language-changed', $token)->with('success', __('public.language_change.success'));
     }
 }

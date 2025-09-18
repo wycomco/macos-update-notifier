@@ -26,7 +26,6 @@ test('admin can create subscriber with specific language', function () {
     
     $response = $this->actingAs($user)->post(route('subscribers.store'), [
         'email' => 'test@example.com',
-        'macos_version' => 'Sonoma',
         'subscribed_versions' => ['macOS 14'],
         'days_to_install' => 3,
         'language' => 'de',
@@ -50,7 +49,6 @@ test('admin cannot create subscriber with invalid language', function () {
     
     $response = $this->actingAs($user)->post(route('subscribers.store'), [
         'email' => 'test@example.com',
-        'macos_version' => 'Sonoma',
         'subscribed_versions' => ['macOS 14'],
         'days_to_install' => 3,
         'language' => 'invalid',
@@ -83,7 +81,6 @@ test('admin can update subscriber language', function () {
     
     $response = $this->actingAs($user)->patch(route('subscribers.update', $subscriber), [
         'email' => $subscriber->email,
-        'macos_version' => $subscriber->macos_version,
         'subscribed_versions' => $subscriber->subscribed_versions,
         'days_to_install' => $subscriber->days_to_install,
         'language' => 'es',
@@ -106,7 +103,6 @@ test('admin cannot update subscriber with invalid language', function () {
     
     $response = $this->actingAs($user)->patch(route('subscribers.update', $subscriber), [
         'email' => $subscriber->email,
-        'macos_version' => $subscriber->macos_version,
         'subscribed_versions' => $subscriber->subscribed_versions,
         'days_to_install' => $subscriber->days_to_install,
         'language' => 'invalid',
@@ -133,7 +129,6 @@ test('default language is applied when creating subscriber without language', fu
     
     $response = $this->actingAs($user)->post(route('subscribers.store'), [
         'email' => 'test@example.com',
-        'macos_version' => 'Sonoma',
         'subscribed_versions' => ['macOS 14'],
         'days_to_install' => 7,
         // No language specified

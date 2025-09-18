@@ -63,36 +63,8 @@
                             @enderror
                         </div>
 
-                        <!-- Current macOS Version -->
-                        <div>
-                            <label for="macos_version" class="block text-sm font-medium text-white mb-2">
-                                Current macOS Version
-                            </label>
-                            <select id="macos_version" 
-                                    name="macos_version" 
-                                    required
-                                    class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300 @error('macos_version') border-red-500 ring-2 ring-red-500/50 @enderror">
-                                <option value="" class="bg-slate-800 text-slate-400">Select macOS Version</option>
-                                @php
-                                    $macosVersions = ['Sonoma', 'Ventura', 'Monterey', 'Big Sur', 'Catalina', 'Mojave'];
-                                @endphp
-                                @foreach($macosVersions as $version)
-                                    <option value="{{ $version }}" 
-                                            {{ old('macos_version') === $version ? 'selected' : '' }}
-                                            class="bg-slate-800 text-white">
-                                        macOS {{ $version }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            <p class="mt-2 text-sm text-slate-400">
-                                The macOS version currently installed on the user's device
-                            </p>
-                            @error('macos_version')
-                                <p class="mt-2 text-sm text-red-400">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <!-- Subscribed Versions -->
+                        <!-- Language Selection -->
+                        <div class="mb-6">                        <!-- Subscribed Versions -->
                         <div>
                             <label class="block text-sm font-medium text-white mb-4">
                                 Subscribed macOS Versions

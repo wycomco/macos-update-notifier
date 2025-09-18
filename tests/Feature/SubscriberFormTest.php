@@ -7,19 +7,6 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
-test('subscriber edit form displays macos version field', function () {
-    $user = User::factory()->create(['is_super_admin' => true]);
-    $subscriber = Subscriber::factory()->create(['macos_version' => 'Sonoma']);
-    
-    $response = $this->actingAs($user)->get(route('subscribers.edit', $subscriber));
-    
-    $response->assertStatus(200)
-        ->assertSee('Current macOS Version')
-        ->assertSee('macOS Sonoma')
-        ->assertSee('name="macos_version"', false)
-        ->assertSee('selected', false); // Should show Sonoma as selected
-});
-
 test('subscriber edit form displays all required fields', function () {
     $user = User::factory()->create(['is_super_admin' => true]);
     $subscriber = Subscriber::factory()->create();
@@ -29,12 +16,10 @@ test('subscriber edit form displays all required fields', function () {
     $response->assertStatus(200)
         ->assertSee('Email Address')
         ->assertSee('Preferred Language')
-        ->assertSee('Current macOS Version')
         ->assertSee('Subscribed macOS Versions')
         ->assertSee('Days to Install After Release')
         ->assertSee('name="email"', false)
         ->assertSee('name="language"', false)
-        ->assertSee('name="macos_version"', false)
         ->assertSee('name="subscribed_versions[]"', false)
         ->assertSee('name="days_to_install"', false);
 });
@@ -43,7 +28,6 @@ test('can successfully update subscriber with all fields', function () {
     $user = User::factory()->create(['is_super_admin' => true]);
     $subscriber = Subscriber::factory()->create([
         'email' => 'old@example.com',
-        'macos_version' => 'Monterey',
         'language' => 'en',
         'days_to_install' => 30,
     ]);
@@ -54,7 +38,6 @@ test('can successfully update subscriber with all fields', function () {
     
     $response = $this->actingAs($user)->patch(route('subscribers.update', $subscriber), [
         'email' => 'updated@example.com',
-        'macos_version' => 'Sonoma',
         'language' => 'fr',
         'subscribed_versions' => ['macOS 14', 'macOS 15'],
         'days_to_install' => 14,
@@ -64,25 +47,9 @@ test('can successfully update subscriber with all fields', function () {
     
     $subscriber->refresh();
     expect($subscriber->email)->toBe('updated@example.com');
-    expect($subscriber->macos_version)->toBe('Sonoma');
     expect($subscriber->language)->toBe('fr');
     expect($subscriber->subscribed_versions)->toBe(['macOS 14', 'macOS 15']);
     expect($subscriber->days_to_install)->toBe(14);
-});
-
-test('validation fails when macos_version is missing', function () {
-    $user = User::factory()->create(['is_super_admin' => true]);
-    $subscriber = Subscriber::factory()->create();
-    
-    $response = $this->actingAs($user)->patch(route('subscribers.update', $subscriber), [
-        'email' => $subscriber->email,
-        'language' => $subscriber->language,
-        'subscribed_versions' => $subscriber->subscribed_versions,
-        'days_to_install' => $subscriber->days_to_install,
-        // Missing macos_version
-    ]);
-    
-    $response->assertSessionHasErrors('macos_version');
 });
 
 test('validation fails when email is missing', function () {
@@ -91,7 +58,6 @@ test('validation fails when email is missing', function () {
     
     $response = $this->actingAs($user)->patch(route('subscribers.update', $subscriber), [
         // Missing email
-        'macos_version' => $subscriber->macos_version,
         'language' => $subscriber->language,
         'subscribed_versions' => $subscriber->subscribed_versions,
         'days_to_install' => $subscriber->days_to_install,
@@ -106,7 +72,6 @@ test('validation fails when subscribed_versions is empty', function () {
     
     $response = $this->actingAs($user)->patch(route('subscribers.update', $subscriber), [
         'email' => $subscriber->email,
-        'macos_version' => $subscriber->macos_version,
         'language' => $subscriber->language,
         'subscribed_versions' => [], // Empty array
         'days_to_install' => $subscriber->days_to_install,
@@ -121,7 +86,6 @@ test('validation fails when days_to_install is out of range', function () {
     
     $response = $this->actingAs($user)->patch(route('subscribers.update', $subscriber), [
         'email' => $subscriber->email,
-        'macos_version' => $subscriber->macos_version,
         'language' => $subscriber->language,
         'subscribed_versions' => $subscriber->subscribed_versions,
         'days_to_install' => 500, // Too high
@@ -130,18 +94,20 @@ test('validation fails when days_to_install is out of range', function () {
     $response->assertSessionHasErrors('days_to_install');
 });
 
-test('subscriber create form displays macos version field', function () {
+test('subscriber create form displays all required fields', function () {
     $user = User::factory()->create(['is_super_admin' => true]);
     
     $response = $this->actingAs($user)->get(route('subscribers.create'));
     
     $response->assertStatus(200)
-        ->assertSee('Current macOS Version')
-        ->assertSee('Select macOS Version')
-        ->assertSee('macOS Sonoma')
-        ->assertSee('macOS Ventura')
-        ->assertSee('macOS Monterey')
-        ->assertSee('name="macos_version"', false);
+        ->assertSee('Email Address')
+        ->assertSee('Preferred Language')
+        ->assertSee('Subscribed macOS Versions')
+        ->assertSee('Days to Install After Release')
+        ->assertSee('name="email"', false)
+        ->assertSee('name="language"', false)
+        ->assertSee('name="subscribed_versions[]"', false)
+        ->assertSee('name="days_to_install"', false);
 });
 
 test('can successfully create subscriber with all fields', function () {
@@ -153,7 +119,6 @@ test('can successfully create subscriber with all fields', function () {
     
     $response = $this->actingAs($user)->post(route('subscribers.store'), [
         'email' => 'new@example.com',
-        'macos_version' => 'Sonoma',
         'language' => 'de',
         'subscribed_versions' => ['macOS 14'],
         'days_to_install' => 7,
@@ -163,25 +128,9 @@ test('can successfully create subscriber with all fields', function () {
     
     $subscriber = Subscriber::where('email', 'new@example.com')->first();
     expect($subscriber)->not->toBeNull();
-    expect($subscriber->macos_version)->toBe('Sonoma');
     expect($subscriber->language)->toBe('de');
     expect($subscriber->subscribed_versions)->toBe(['macOS 14']);
     expect($subscriber->days_to_install)->toBe(7);
-});
-
-test('create validation fails when macos_version is missing', function () {
-    $user = User::factory()->create(['is_super_admin' => true]);
-    
-    $response = $this->actingAs($user)->post(route('subscribers.store'), [
-        'email' => 'new@example.com',
-        'language' => 'en',
-        'subscribed_versions' => ['macOS 14'],
-        'days_to_install' => 7,
-        // Missing macos_version
-    ]);
-    
-    $response->assertSessionHasErrors('macos_version');
-    expect(Subscriber::where('email', 'new@example.com')->first())->toBeNull();
 });
 
 test('checkbox selections are visually distinct when checked', function () {
@@ -207,7 +156,6 @@ test('language change is logged when updated', function () {
     
     $response = $this->actingAs($user)->patch(route('subscribers.update', $subscriber), [
         'email' => $subscriber->email,
-        'macos_version' => $subscriber->macos_version,
         'language' => 'es', // Changed language
         'subscribed_versions' => $subscriber->subscribed_versions,
         'days_to_install' => $subscriber->days_to_install,
@@ -222,21 +170,24 @@ test('language change is logged when updated', function () {
     ]);
 });
 
-test('macos version change is logged when updated', function () {
+test('subscribed versions change is logged when updated', function () {
     $user = User::factory()->create(['is_super_admin' => true]);
-    $subscriber = Subscriber::factory()->create(['macos_version' => 'Monterey']);
+    $subscriber = Subscriber::factory()->create(['subscribed_versions' => ['macOS 14']]);
+    
+    // Create releases for validation
+    Release::factory()->create(['major_version' => 'macOS 14']);
+    Release::factory()->create(['major_version' => 'macOS 15']);
     
     $response = $this->actingAs($user)->patch(route('subscribers.update', $subscriber), [
         'email' => $subscriber->email,
-        'macos_version' => 'Sonoma', // Changed macOS version
         'language' => $subscriber->language,
-        'subscribed_versions' => $subscriber->subscribed_versions,
+        'subscribed_versions' => ['macOS 14', 'macOS 15'], // Changed subscribed versions
         'days_to_install' => $subscriber->days_to_install,
     ]);
     
     $response->assertRedirect(route('subscribers.show', $subscriber));
     
-    // Should log the macOS version change
+    // Should log the subscribed versions change
     $this->assertDatabaseHas('subscriber_actions', [
         'subscriber_id' => $subscriber->id,
         'action' => 'version_changed',
