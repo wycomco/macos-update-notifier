@@ -38,26 +38,52 @@
                             @enderror
                         </div>
 
-                        <!-- Subscribed Versions -->
+                        <!-- Language Selection -->
+                        <div>
+                            <label for="language" class="block text-sm font-medium text-white mb-2">
+                                Preferred Language
+                            </label>
+                            <select id="language" 
+                                    name="language" 
+                                    required
+                                    class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300 @error('language') border-red-500 ring-2 ring-red-500/50 @enderror">
+                                @foreach($supportedLanguages as $code => $language)
+                                    <option value="{{ $code }}" 
+                                            {{ old('language', config('subscriber_languages.default_language', 'en')) === $code ? 'selected' : '' }}
+                                            class="bg-slate-800 text-white">
+                                        {{ $language['flag'] }} {{ $language['name'] }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <p class="mt-2 text-sm text-slate-400">
+                                Language for email notifications and public pages
+                            </p>
+                            @error('language')
+                                <p class="mt-2 text-sm text-red-400">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Language Selection -->
+                        <div class="mb-6">                        <!-- Subscribed Versions -->
                         <div>
                             <label class="block text-sm font-medium text-white mb-4">
                                 Subscribed macOS Versions
                             </label>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 @foreach($availableVersions as $version)
-                                    <label class="group relative cursor-pointer">
+                                    <label class="group relative cursor-pointer has-[:checked]:bg-purple-500/20 has-[:checked]:border-purple-500/50 has-[:checked]:shadow-lg has-[:checked]:shadow-purple-500/25">
                                         <input type="checkbox" 
                                                name="subscribed_versions[]" 
                                                value="{{ $version }}" 
                                                {{ in_array($version, old('subscribed_versions', [])) ? 'checked' : '' }}
                                                class="sr-only peer">
-                                        <div class="flex items-center gap-3 p-4 bg-white/10 border border-white/20 rounded-xl transition-all duration-300 peer-checked:bg-purple-500/20 peer-checked:border-purple-500/50 hover:bg-white/20">
-                                            <div class="w-5 h-5 rounded-full border-2 border-white/30 flex items-center justify-center peer-checked:border-purple-400 peer-checked:bg-purple-500">
+                                        <div class="flex items-center gap-3 p-4 bg-white/10 border border-white/20 rounded-xl transition-all duration-300 peer-checked:bg-purple-500/20 peer-checked:border-purple-500/50 peer-checked:shadow-lg peer-checked:shadow-purple-500/25 hover:bg-white/20">
+                                            <div class="w-5 h-5 rounded-full border-2 border-white/30 flex items-center justify-center peer-checked:border-purple-400 peer-checked:bg-purple-500 peer-checked:shadow-lg peer-checked:shadow-purple-500/50 transition-all duration-300">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-white opacity-0 peer-checked:opacity-100 transition-opacity" viewBox="0 0 20 20" fill="currentColor">
                                                     <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
                                                 </svg>
                                             </div>
-                                            <span class="text-white font-medium">{{ $version }}</span>
+                                            <span class="text-white font-medium peer-checked:text-purple-200 transition-colors">{{ $version }}</span>
                                         </div>
                                     </label>
                                 @endforeach

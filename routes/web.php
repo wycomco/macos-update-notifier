@@ -28,6 +28,13 @@ Route::get('/unsubscribe/{token}', [PublicSubscriberController::class, 'showUnsu
 Route::post('/unsubscribe/{token}', [PublicSubscriberController::class, 'unsubscribe'])->name('public.unsubscribe.confirm');
 Route::get('/change-version/{token}', [PublicSubscriberController::class, 'showVersionChange'])->name('public.version-change');
 Route::post('/change-version/{token}', [PublicSubscriberController::class, 'changeVersion'])->name('public.version-change.update');
+Route::get('/change-language/{token}', [PublicSubscriberController::class, 'showLanguageChange'])->name('public.language-change');
+Route::post('/change-language/{token}', [PublicSubscriberController::class, 'changeLanguage'])->name('public.language-change.update');
+
+// Success pages for public subscriber actions
+Route::get('/unsubscribed/{token}', [PublicSubscriberController::class, 'showUnsubscribed'])->name('public.unsubscribed');
+Route::get('/language-changed/{token}', [PublicSubscriberController::class, 'showLanguageChanged'])->name('public.language-changed');
+Route::get('/version-changed/{token}', [PublicSubscriberController::class, 'showVersionChanged'])->name('public.version-changed');
 
 // Authenticated routes
 Route::middleware('auth')->group(function () {

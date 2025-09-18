@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>macOS Update Required</title>
+    <title>{{ __('emails.macos_update.title') }}</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
@@ -71,93 +71,98 @@
 </head>
 <body>
     <div class="header">
-        <h1>🍎 macOS Update Required</h1>
+        <h1>{{ __('emails.macos_update.title') }}</h1>
     </div>
     
     <div class="content">
         <div class="alert @if($daysRemaining <= 1) warning @endif">
             <strong>
                 @if($daysRemaining > 1)
-                    Update Reminder: {{ $daysRemaining }} days remaining
+                    {{ __('emails.macos_update.alert.multiple_days', ['days' => $daysRemaining]) }}
                 @elseif($daysRemaining == 1)
-                    ⚠️ Final Notice: Update required by tomorrow
+                    {{ __('emails.macos_update.alert.tomorrow') }}
                 @elseif($daysRemaining == 0)
-                    🚨 Critical: Update required today
+                    {{ __('emails.macos_update.alert.today') }}
                 @else
-                    🚨 Overdue: Update deadline has passed
+                    {{ __('emails.macos_update.alert.overdue') }}
                 @endif
             </strong>
         </div>
 
-        <h2>New macOS Release Available</h2>
+        <h2>{{ __('emails.macos_update.new_release_title') }}</h2>
         
         <div class="info-box">
-            <p><strong>Release:</strong> {{ $release->major_version }} {{ $release->version }}</p>
-            <p><strong>Release Date:</strong> {{ $release->release_date->format('F j, Y') }}</p>
-            <p><strong>Your Deadline:</strong> <span class="deadline">{{ $deadline->format('F j, Y') }}</span></p>
+            <p><strong>{{ __('emails.macos_update.release_info.release') }}</strong> {{ $release->major_version }} {{ $release->version }}</p>
+            <p><strong>{{ __('emails.macos_update.release_info.release_date') }}</strong> {{ $release->release_date->format('F j, Y') }}</p>
+            <p><strong>{{ __('emails.macos_update.release_info.deadline') }}</strong> <span class="deadline">{{ $deadline->format('F j, Y') }}</span></p>
             @if($daysRemaining >= 0)
-                <p><strong>Days Remaining:</strong> {{ $daysRemaining }}</p>
+                <p><strong>{{ __('emails.macos_update.release_info.days_remaining') }}</strong> {{ $daysRemaining }}</p>
             @else
-                <p><strong>Days Overdue:</strong> {{ abs($daysRemaining) }}</p>
+                <p><strong>{{ __('emails.macos_update.release_info.days_overdue') }}</strong> {{ abs($daysRemaining) }}</p>
             @endif
         </div>
 
-        <h2>📋 Action Required</h2>
-        <p>Please install the macOS update <strong>{{ $release->version }}</strong> as soon as possible.</p>
+        <h2>{{ __('emails.macos_update.action_required_title') }}</h2>
+        <p>{!! __('emails.macos_update.action_text', ['version' => $release->version]) !!}</p>
         
-        <p><strong>To install the update:</strong></p>
+        <p><strong>{{ __('emails.macos_update.install_steps_title') }}</strong></p>
         <ol>
-            <li>Click the Apple menu 🍎 in the top-left corner</li>
-            <li>Select "About This Mac"</li>
-            <li>Click "More Info..." then "Software Update"</li>
-            <li>Follow the prompts to install available updates</li>
+            @foreach(__('emails.macos_update.install_steps') as $step)
+                <li>{{ $step }}</li>
+            @endforeach
         </ol>
 
         <div class="alert warning">
-            <p><strong>⚠️ Important Warning:</strong></p>
-            <p>Failure to install this update by your deadline may result in:</p>
+            <p><strong>{{ __('emails.macos_update.warning_title') }}</strong></p>
+            <p>{{ __('emails.macos_update.warning_text') }}</p>
             <ul>
-                <li>Automatic forced installation</li>
-                <li>Unexpected system restarts</li>
-                <li>Potential data loss if files are not saved</li>
-                <li>Temporary system unavailability</li>
+                @foreach(__('emails.macos_update.warning_points') as $point)
+                    <li>{{ $point }}</li>
+                @endforeach
             </ul>
         </div>
 
-        <h2>🛡️ Why This Update is Important</h2>
-        <p>macOS updates typically include:</p>
+        <h2>{{ __('emails.macos_update.why_important_title') }}</h2>
+        <p>{{ __('emails.macos_update.why_important_text') }}</p>
         <ul>
-            <li>Critical security patches</li>
-            <li>Bug fixes and stability improvements</li>
-            <li>Performance enhancements</li>
-            <li>New features and functionality</li>
+            @foreach(__('emails.macos_update.why_important_points') as $point)
+                <li>{{ $point }}</li>
+            @endforeach
         </ul>
 
-        <p><strong>Need Help?</strong> 
+        <p><strong>{{ __('emails.macos_update.need_help') }}</strong> 
             @if($subscriber->admin)
-                Contact your administrator <strong>{{ $subscriber->admin->name ?? $subscriber->admin->email }}</strong> 
-                ({{ $subscriber->admin->email }}) if you have questions about this update or need assistance with the installation process.
+                {!! __('emails.macos_update.need_help_with_admin', [
+                    'admin_name' => $subscriber->admin->name ?? $subscriber->admin->email,
+                    'admin_email' => $subscriber->admin->email
+                ]) !!}
             @else
-                Contact your IT administrator if you have questions about this update or need assistance with the installation process.
+                {{ __('emails.macos_update.need_help_without_admin') }}
             @endif
         </p>
     </div>
 
     <div class="footer">
-        <p>This is an automated notification from the macOS Update Notifier system.</p>
-        <p>You are receiving this because you are subscribed to updates for {{ $release->major_version }}.</p>
+        <p>{{ __('emails.macos_update.footer.automated_notification') }}</p>
+        <p>{{ __('emails.macos_update.footer.subscription_reason', ['version' => $release->major_version]) }}</p>
         
         <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #dee2e6;">
             <p style="margin: 5px 0;">
                 <a href="{{ route('public.version-change', ['token' => $subscriber->unsubscribe_token]) }}" 
                    style="color: #007AFF; text-decoration: none;">
-                    Change your macOS version preference
+                    {{ __('emails.macos_update.footer.change_version') }}
+                </a>
+            </p>
+            <p style="margin: 5px 0;">
+                <a href="{{ route('public.language-change', ['token' => $subscriber->unsubscribe_token]) }}" 
+                   style="color: #007AFF; text-decoration: none;">
+                    {{ __('emails.macos_update.footer.change_language') }}
                 </a>
             </p>
             <p style="margin: 5px 0;">
                 <a href="{{ route('public.unsubscribe', ['token' => $subscriber->unsubscribe_token]) }}" 
                    style="color: #dc3545; text-decoration: none;">
-                    Unsubscribe from these notifications
+                    {{ __('emails.macos_update.footer.unsubscribe') }}
                 </a>
             </p>
         </div>

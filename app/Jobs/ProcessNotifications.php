@@ -10,6 +10,7 @@ use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\App;
 
 class ProcessNotifications implements ShouldQueue
 {
@@ -67,6 +68,7 @@ class ProcessNotifications implements ShouldQueue
             Log::info("Checking major version", [
                 'major_version' => $majorVersion,
                 'subscriber_id' => $subscriber->id,
+                'language' => $subscriber->language,
                 'subscriber_days_to_install' => $subscriber->days_to_install,
                 'warning_days' => $warningDays
             ]);
@@ -82,6 +84,7 @@ class ProcessNotifications implements ShouldQueue
             if ($latestRelease->isWithinDeadline($subscriber->days_to_install, $warningDays)) {
                 Log::info("Release within deadline, sending notification", [
                     'subscriber_id' => $subscriber->id,
+                    'language' => $subscriber->language,
                     'release_id' => $latestRelease->id,
                     'version' => $latestRelease->version
                 ]);
@@ -98,6 +101,7 @@ class ProcessNotifications implements ShouldQueue
         try {
             Log::info('Sending notification', [
                 'email' => $subscriber->email,
+                'language' => $subscriber->language,
                 'version' => $release->version,
                 'major_version' => $release->major_version
             ]);
@@ -117,6 +121,7 @@ class ProcessNotifications implements ShouldQueue
         } catch (\Exception $e) {
             Log::error('Failed to send notification', [
                 'email' => $subscriber->email,
+                'language' => $subscriber->language,
                 'version' => $release->version,
                 'error' => $e->getMessage()
             ]);

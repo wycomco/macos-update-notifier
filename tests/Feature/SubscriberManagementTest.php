@@ -3,6 +3,7 @@
 use App\Models\User;
 use App\Models\Subscriber;
 use App\Models\SubscriberAction;
+use App\Models\Release;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
@@ -19,7 +20,6 @@ describe('Subscriber Management', function () {
         
         $response = $this->post(route('subscribers.store'), [
             'email' => 'test@example.com',
-            'macos_version' => 'Sonoma',
             'subscribed_versions' => ['macOS 14'],
             'days_to_install' => 30
         ]);
@@ -40,7 +40,6 @@ describe('Subscriber Management', function () {
         
         $this->post(route('subscribers.store'), [
             'email' => 'test@example.com',
-            'macos_version' => 'Sonoma',
             'subscribed_versions' => ['macOS 14'],
             'days_to_install' => 30
         ]);
@@ -51,32 +50,36 @@ describe('Subscriber Management', function () {
         expect($subscriber->actions()->first()->action)->toBe('subscribed');
     });
     
-    it('can update subscriber macOS version', function () {
+    it('can update subscriber subscribed versions', function () {
         $admin = User::factory()->create();
         $subscriber = Subscriber::factory()->create([
             'admin_id' => $admin->id,
-            'macos_version' => 'Monterey'
+            'subscribed_versions' => ['macOS 14']
         ]);
+        
+        // Create releases for validation
+        Release::factory()->create(['major_version' => 'macOS 14']);
+        Release::factory()->create(['major_version' => 'macOS 15']);
         
         $this->actingAs($admin);
         
         $response = $this->put(route('subscribers.update', $subscriber), [
             'email' => $subscriber->email,
-            'macos_version' => 'Sonoma',
-            'subscribed_versions' => $subscriber->subscribed_versions,
+            'language' => $subscriber->language,
+            'subscribed_versions' => ['macOS 14', 'macOS 15'],
             'days_to_install' => $subscriber->days_to_install
         ]);
         
         $response->assertRedirect()
                 ->assertSessionHas('success');
         
-        expect($subscriber->fresh()->macos_version)->toBe('Sonoma');
+        expect($subscriber->fresh()->subscribed_versions)->toBe(['macOS 14', 'macOS 15']);
         
         // Check action was logged
         $action = $subscriber->actions()->where('action', 'version_changed')->latest()->first();
         expect($action->action)->toBe('version_changed');
-        expect($action->data['old_version'])->toBe('Monterey');
-        expect($action->data['new_version'])->toBe('Sonoma');
+        expect($action->data['old_versions'])->toBe(['macOS 14']);
+        expect($action->data['new_versions'])->toBe(['macOS 14', 'macOS 15']);
     });
     
     it('can delete subscriber', function () {
@@ -112,7 +115,6 @@ describe('Subscriber Management', function () {
         // Cannot update
         $response = $this->put(route('subscribers.update', $subscriber), [
             'email' => $subscriber->email,
-            'macos_version' => 'Sonoma',
             'subscribed_versions' => ['macOS 14'],
             'days_to_install' => 30
         ]);
@@ -142,7 +144,6 @@ describe('Subscriber Management', function () {
         // Can update
         $response = $this->put(route('subscribers.update', $subscriber), [
             'email' => $subscriber->email,
-            'macos_version' => 'Sonoma',
             'subscribed_versions' => $subscriber->subscribed_versions,
             'days_to_install' => $subscriber->days_to_install
         ]);
@@ -187,26 +188,30 @@ describe('Public Subscriber Actions', function () {
         $response->assertNotFound();
     });
     
-    it('can change macOS version with valid token', function () {
+    it('can change subscribed versions with valid token', function () {
         $subscriber = Subscriber::factory()->create([
-            'macos_version' => 'Monterey',
+            'subscribed_versions' => ['macOS 14'],
             'unsubscribe_token' => Str::random(32)
         ]);
         
+        // Create releases for validation
+        Release::factory()->create(['major_version' => 'macOS 14']);
+        Release::factory()->create(['major_version' => 'macOS 15']);
+        
         $response = $this->post(route('public.version-change.update', $subscriber->unsubscribe_token), [
-            'macos_version' => 'Sonoma'
+            'subscribed_versions' => ['macOS 14', 'macOS 15']
         ]);
         
         $response->assertRedirect()
                 ->assertSessionHas('success');
         
-        expect($subscriber->fresh()->macos_version)->toBe('Sonoma');
+        expect($subscriber->fresh()->subscribed_versions)->toBe(['macOS 14', 'macOS 15']);
         
         // Check action was logged
         $action = $subscriber->actions()->where('action', 'version_changed')->latest()->first();
         expect($action->action)->toBe('version_changed');
-        expect($action->data['old_version'])->toBe('Monterey');
-        expect($action->data['new_version'])->toBe('Sonoma');
+        expect($action->data['old_versions'])->toBe(['macOS 14']);
+        expect($action->data['new_versions'])->toBe(['macOS 14', 'macOS 15']);
     });
     
     it('shows version change form with valid token', function () {
@@ -221,16 +226,16 @@ describe('Public Subscriber Actions', function () {
                 ->assertViewHas('subscriber', $subscriber);
     });
     
-    it('validates macOS version in public change', function () {
+    it('validates subscribed versions in public change', function () {
         $subscriber = Subscriber::factory()->create([
             'unsubscribe_token' => Str::random(32)
         ]);
         
         $response = $this->post(route('public.version-change.update', $subscriber->unsubscribe_token), [
-            'macos_version' => 'Invalid Version'
+            'subscribed_versions' => ['Invalid Version']
         ]);
         
-        $response->assertSessionHasErrors(['macos_version']);
+        $response->assertSessionHasErrors(['subscribed_versions.0']);
     });
 });
 
