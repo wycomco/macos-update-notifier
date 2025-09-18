@@ -558,4 +558,157 @@ describe('Bulk Import', function () {
         
         $response->assertSessionHasErrors(['days_to_install']);
     });
+    
+    it('can import subscribers with specified language via textarea', function () {
+        $user = User::factory()->create();
+        
+        $this->actingAs($user);
+        
+        $emailList = "german1@example.com\ngerman2@example.com";
+        
+        $response = $this->post(route('subscribers.import.process'), [
+            'emails' => $emailList,
+            'subscribed_versions' => ['macOS 14'],
+            'days_to_install' => 30,
+            'language' => 'de'
+        ]);
+        
+        $response->assertRedirect(route('subscribers.index'))
+                ->assertSessionHas('success');
+        
+        // Check subscribers were created with correct language
+        $subscriber1 = Subscriber::where('email', 'german1@example.com')->first();
+        $subscriber2 = Subscriber::where('email', 'german2@example.com')->first();
+        
+        expect($subscriber1)->not->toBeNull();
+        expect($subscriber2)->not->toBeNull();
+        expect($subscriber1->language)->toBe('de');
+        expect($subscriber2->language)->toBe('de');
+        
+        // Check import action was logged with language
+        $action = $subscriber1->actions()->where('action', 'imported')->first();
+        expect($action->data['language'])->toBe('de');
+    });
+    
+    it('can import subscribers with specified language via CSV', function () {
+        $user = User::factory()->create();
+        
+        $csvContent = "email\nfrench1@example.com\nfrench2@example.com";
+        $file = UploadedFile::fake()->createWithContent('subscribers.csv', $csvContent);
+        
+        $this->actingAs($user);
+        
+        $response = $this->post(route('subscribers.import.process'), [
+            'csv_file' => $file,
+            'subscribed_versions' => ['macOS 15'],
+            'days_to_install' => 45,
+            'language' => 'fr'
+        ]);
+        
+        $response->assertRedirect(route('subscribers.index'))
+                ->assertSessionHas('success');
+        
+        // Check subscribers were created with correct language
+        $subscriber1 = Subscriber::where('email', 'french1@example.com')->first();
+        $subscriber2 = Subscriber::where('email', 'french2@example.com')->first();
+        
+        expect($subscriber1)->not->toBeNull();
+        expect($subscriber2)->not->toBeNull();
+        expect($subscriber1->language)->toBe('fr');
+        expect($subscriber2->language)->toBe('fr');
+        
+        // Check import action was logged with language
+        $action = $subscriber1->actions()->where('action', 'imported')->first();
+        expect($action->data['language'])->toBe('fr');
+    });
+    
+    it('uses default language when no language specified in textarea import', function () {
+        $user = User::factory()->create();
+        
+        $this->actingAs($user);
+        
+        $emailList = "default@example.com";
+        
+        $response = $this->post(route('subscribers.import.process'), [
+            'emails' => $emailList,
+            'subscribed_versions' => ['macOS 14'],
+            'days_to_install' => 30
+            // No language specified
+        ]);
+        
+        $response->assertRedirect(route('subscribers.index'))
+                ->assertSessionHas('success');
+        
+        // Check subscriber was created with default language
+        $subscriber = Subscriber::where('email', 'default@example.com')->first();
+        expect($subscriber)->not->toBeNull();
+        expect($subscriber->language)->toBe(config('subscriber_languages.default', 'en'));
+        
+        // Check import action was logged with default language
+        $action = $subscriber->actions()->where('action', 'imported')->first();
+        expect($action->data['language'])->toBe(config('subscriber_languages.default', 'en'));
+    });
+    
+    it('uses default language when no language specified in CSV import', function () {
+        $user = User::factory()->create();
+        
+        $csvContent = "email\ndefault-csv@example.com";
+        $file = UploadedFile::fake()->createWithContent('subscribers.csv', $csvContent);
+        
+        $this->actingAs($user);
+        
+        $response = $this->post(route('subscribers.import.process'), [
+            'csv_file' => $file,
+            'subscribed_versions' => ['macOS 14'],
+            'days_to_install' => 30
+            // No language specified
+        ]);
+        
+        $response->assertRedirect(route('subscribers.index'))
+                ->assertSessionHas('success');
+        
+        // Check subscriber was created with default language
+        $subscriber = Subscriber::where('email', 'default-csv@example.com')->first();
+        expect($subscriber)->not->toBeNull();
+        expect($subscriber->language)->toBe(config('subscriber_languages.default', 'en'));
+        
+        // Check import action was logged with default language
+        $action = $subscriber->actions()->where('action', 'imported')->first();
+        expect($action->data['language'])->toBe(config('subscriber_languages.default', 'en'));
+    });
+    
+    it('validates language parameter in import', function () {
+        $user = User::factory()->create();
+        
+        $this->actingAs($user);
+        
+        // Test invalid language
+        $response = $this->post(route('subscribers.import.process'), [
+            'emails' => 'test@example.com',
+            'subscribed_versions' => ['macOS 14'],
+            'days_to_install' => 30,
+            'language' => 'invalid'
+        ]);
+        
+        $response->assertSessionHasErrors(['language']);
+    });
+    
+    it('import page contains supported languages for selection', function () {
+        $user = User::factory()->create();
+        
+        $this->actingAs($user);
+        
+        $response = $this->get(route('subscribers.import'));
+        
+        $response->assertOk()
+                ->assertViewHas('supportedLanguages')
+                ->assertViewIs('subscribers.import');
+        
+        $supportedLanguages = $response->viewData('supportedLanguages');
+        expect($supportedLanguages)->toBeArray();
+        expect($supportedLanguages)->toHaveKey('en');
+        expect($supportedLanguages)->toHaveKey('de');
+        expect($supportedLanguages)->toHaveKey('fr');
+        expect($supportedLanguages)->toHaveKey('es');
+    });
 });

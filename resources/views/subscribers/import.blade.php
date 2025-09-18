@@ -188,6 +188,35 @@
                             </p>
                         </div>
 
+                        <!-- Language Selection -->
+                        <div>
+                            <label for="language" class="block text-lg font-semibold text-slate-200 mb-3">
+                                Notification Language
+                            </label>
+                            <div class="relative">
+                                <select id="language" 
+                                        name="language" 
+                                        class="block w-full px-4 py-4 rounded-xl bg-white/10 border border-white/20 text-white focus:border-orange-400 focus:ring-orange-400 focus:ring-2 focus:ring-offset-0 transition-all backdrop-blur-sm appearance-none">
+                                    <option value="" class="bg-slate-800 text-slate-200">Use Default Language ({{ config('subscriber_languages.supported.' . config('subscriber_languages.default') . '.name', 'English') }})</option>
+                                    @foreach($supportedLanguages as $code => $languageData)
+                                        <option value="{{ $code }}" 
+                                                {{ old('language') === $code ? 'selected' : '' }}
+                                                class="bg-slate-800 text-slate-200">
+                                            {{ $languageData['flag'] }} {{ $languageData['name'] }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-slate-400" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <p class="mt-3 text-sm text-slate-400">
+                                Choose the language for notifications that will be sent to these subscribers. If not specified, the default language will be used.
+                            </p>
+                        </div>
+
                         <!-- Import Preview -->
                         <div class="p-6 bg-purple-500/10 rounded-xl border border-purple-500/20">
                             <div class="flex items-center gap-3 mb-3">

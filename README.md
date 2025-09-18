@@ -342,6 +342,10 @@ php artisan queue:work
 2. Choose your method:
    - **CSV Upload**: Upload a properly formatted CSV file
    - **Copy/Paste**: Paste data directly from Excel/Sheets
+3. Configure import settings:
+   - **macOS Versions**: Select which versions to monitor
+   - **Days to Install**: Set notification deadline (1-365 days)
+   - **Language**: Choose notification language (optional, defaults to English)
 
 ##### CSV Format Example:
 
@@ -351,6 +355,15 @@ user1@company.com,"macOS 14,macOS 15",30
 user2@company.com,"macOS 15",14
 admin@company.com,"macOS 14,macOS 15",60
 ```
+
+##### Language Support
+
+- **English** (en) - Default
+- **German** (de) - Deutsch
+- **French** (fr) - Français  
+- **Spanish** (es) - Español
+
+All imported subscribers will use the selected language for notifications. If no language is specified, English will be used as the default.
 
 ---
 

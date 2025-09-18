@@ -27,7 +27,10 @@ class SubscriberImportController extends Controller
         // Get import method from request (default to 'textarea')
         $method = $request->get('method', 'textarea');
         
-        return view('subscribers.import', compact('availableVersions', 'method'));
+        // Get supported languages for the language selection dropdown
+        $supportedLanguages = config('subscriber_languages.supported', []);
+        
+        return view('subscribers.import', compact('availableVersions', 'method', 'supportedLanguages'));
     }
 
     /**
@@ -63,6 +66,7 @@ class SubscriberImportController extends Controller
             'subscribed_versions' => ['required', 'array', 'min:1'],
             'subscribed_versions.*' => ['string'],
             'days_to_install' => ['required', 'integer', 'min:1', 'max:365'],
+            'language' => config('subscriber_languages.validation_rule', 'nullable|string|in:en,de,fr,es'),
         ]);
 
         $availableVersions = Release::distinct('major_version')
@@ -97,6 +101,9 @@ class SubscriberImportController extends Controller
         $skipped = 0;
         $errors = [];
 
+        // Determine the language to use (either specified or default)
+        $language = $request->language ?: config('subscriber_languages.default', 'en');
+
         foreach ($emails as $email) {
             // Validate email format
             $validator = Validator::make(['email' => $email], [
@@ -121,6 +128,7 @@ class SubscriberImportController extends Controller
                 'email' => $email,
                 'subscribed_versions' => $request->subscribed_versions,
                 'days_to_install' => $request->days_to_install,
+                'language' => $language,
                 'admin_id' => Auth::id(),
             ]);
 
@@ -132,6 +140,7 @@ class SubscriberImportController extends Controller
                     'method' => 'textarea',
                     'versions' => $request->subscribed_versions,
                     'days_to_install' => $request->days_to_install,
+                    'language' => $language,
                 ],
             ]);
 
@@ -159,6 +168,7 @@ class SubscriberImportController extends Controller
             'subscribed_versions' => ['required', 'array', 'min:1'],
             'subscribed_versions.*' => ['string'],
             'days_to_install' => ['required', 'integer', 'min:1', 'max:365'],
+            'language' => config('subscriber_languages.validation_rule', 'nullable|string|in:en,de,fr,es'),
         ]);
 
         $availableVersions = Release::distinct('major_version')
@@ -193,6 +203,9 @@ class SubscriberImportController extends Controller
         $skipped = 0;
         $errors = [];
 
+        // Determine the language to use (either specified or default)
+        $language = $request->language ?: config('subscriber_languages.default', 'en');
+
         foreach ($lines as $lineNumber => $line) {
             $line = trim($line);
             if (empty($line)) continue;
@@ -224,6 +237,7 @@ class SubscriberImportController extends Controller
                 'email' => $email,
                 'subscribed_versions' => $request->subscribed_versions,
                 'days_to_install' => $request->days_to_install,
+                'language' => $language,
                 'admin_id' => Auth::id(),
             ]);
 
@@ -235,6 +249,7 @@ class SubscriberImportController extends Controller
                     'method' => 'csv',
                     'versions' => $request->subscribed_versions,
                     'days_to_install' => $request->days_to_install,
+                    'language' => $language,
                 ],
             ]);
 
