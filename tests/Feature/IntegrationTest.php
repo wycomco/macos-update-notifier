@@ -32,7 +32,6 @@ test('subscriber update preserves data correctly', function () {
 
     $updateData = [
         'email' => 'updated@test.com',
-        'macos_version' => 'Sonoma',
         'subscribed_versions' => ['macOS 14', 'macOS 15'],
         'days_to_install' => 14,
     ];

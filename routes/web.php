@@ -16,7 +16,9 @@ Route::get('/', function () {
 // Magic Link Authentication
 Route::middleware('guest')->group(function () {
     Route::get('/auth/magic-link', [MagicLinkController::class, 'create'])->name('magic-link.form');
-    Route::post('/auth/magic-link', [MagicLinkController::class, 'store'])->name('magic-link.request');
+    Route::post('/auth/magic-link', [MagicLinkController::class, 'store'])
+        ->middleware('throttle:5,1') // 5 requests per minute
+        ->name('magic-link.request');
 });
 Route::get('/auth/magic-link/verify/{user}', [MagicLinkController::class, 'verify'])->name('magic-link.verify');
 Route::get('/auth/magic-link/verify-new', [MagicLinkController::class, 'verifyNew'])->name('magic-link.verify-new');
@@ -26,6 +28,13 @@ Route::get('/unsubscribe/{token}', [PublicSubscriberController::class, 'showUnsu
 Route::post('/unsubscribe/{token}', [PublicSubscriberController::class, 'unsubscribe'])->name('public.unsubscribe.confirm');
 Route::get('/change-version/{token}', [PublicSubscriberController::class, 'showVersionChange'])->name('public.version-change');
 Route::post('/change-version/{token}', [PublicSubscriberController::class, 'changeVersion'])->name('public.version-change.update');
+Route::get('/change-language/{token}', [PublicSubscriberController::class, 'showLanguageChange'])->name('public.language-change');
+Route::post('/change-language/{token}', [PublicSubscriberController::class, 'changeLanguage'])->name('public.language-change.update');
+
+// Success pages for public subscriber actions
+Route::get('/unsubscribed/{token}', [PublicSubscriberController::class, 'showUnsubscribed'])->name('public.unsubscribed');
+Route::get('/language-changed/{token}', [PublicSubscriberController::class, 'showLanguageChanged'])->name('public.language-changed');
+Route::get('/version-changed/{token}', [PublicSubscriberController::class, 'showVersionChanged'])->name('public.version-changed');
 
 // Authenticated routes
 Route::middleware('auth')->group(function () {
@@ -35,6 +44,8 @@ Route::middleware('auth')->group(function () {
     
     // Subscriber management
     Route::resource('subscribers', SubscriberController::class);
+    Route::get('/subscribers/{subscriber}/resubscribe', [SubscriberController::class, 'showResubscribe'])->name('subscribers.resubscribe.form');
+    Route::post('/subscribers/{subscriber}/resubscribe', [SubscriberController::class, 'resubscribe'])->name('subscribers.resubscribe');
     
     // Subscriber import (available to all authenticated users)
     Route::get('/subscribers-import', [SubscriberImportController::class, 'create'])->name('subscribers.import');

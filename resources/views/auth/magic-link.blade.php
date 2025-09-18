@@ -19,6 +19,14 @@
     <form method="POST" action="{{ route('magic-link.request') }}" class="space-y-6">
         @csrf
 
+        <!-- Honeypot fields (hidden from users but visible to bots) -->
+        <div style="position: absolute; left: -9999px; top: -9999px;">
+            <input type="text" name="website" tabindex="-1" autocomplete="off">
+            <input type="text" name="url" tabindex="-1" autocomplete="off">
+            <input type="text" name="homepage" tabindex="-1" autocomplete="off">
+            <input type="text" name="phone" tabindex="-1" autocomplete="off">
+        </div>
+
         <!-- Email Address -->
         <div class="space-y-2">
             <x-input-label for="email" :value="__('Email address')" class="text-slate-200 font-medium" />
@@ -32,6 +40,35 @@
                          autocomplete="username"
                          placeholder="Enter your email address" />
             <x-input-error :messages="$errors->get('email')" class="mt-2" />
+        </div>
+
+        <!-- Math CAPTCHA -->
+        <div class="space-y-2">
+            <x-input-label for="captcha_answer" :value="__('Security Check')" class="text-slate-200 font-medium" />
+            <div class="p-4 rounded-xl bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20">
+                <div class="flex items-center gap-3">
+                    <div class="p-2 rounded-full bg-amber-500/20 flex-shrink-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-amber-400" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-sm font-medium text-amber-400 mb-2">
+                            What is {{ $captcha['question'] }}?
+                        </p>
+                        <x-text-input id="captcha_answer"
+                                     class="w-24 px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-slate-400 focus:border-amber-400 focus:ring-amber-400 focus:ring-2 focus:ring-offset-0 transition-all backdrop-blur-sm"
+                                     type="number"
+                                     name="captcha_answer"
+                                     :value="old('captcha_answer')"
+                                     required
+                                     placeholder="Answer" />
+                        <input type="hidden" name="captcha_key" value="{{ $captcha['key'] }}">
+                    </div>
+                </div>
+            </div>
+            <x-input-error :messages="$errors->get('captcha_answer')" class="mt-2" />
+            <x-input-error :messages="$errors->get('security')" class="mt-2" />
         </div>
 
         <!-- Info Box -->

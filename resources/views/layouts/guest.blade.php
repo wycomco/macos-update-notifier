@@ -41,16 +41,10 @@
                     </a>
                     
                     <nav class="flex items-center gap-4">
-                        @if (Route::has('register') && !Request::routeIs('register'))
-                            <a href="{{ route('register') }}" 
+                        @if (Route::has('magic-link.form'))
+                            <a href="{{ route('magic-link.form') }}" 
                                class="px-6 py-2.5 rounded-lg bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-semibold text-sm shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-                                Register
-                            </a>
-                        @endif
-                        @if (Route::has('login') && !Request::routeIs('login'))
-                            <a href="{{ route('login') }}" 
-                               class="px-6 py-2.5 rounded-lg border border-white/20 hover:border-white/40 bg-white/10 hover:bg-white/20 transition-all duration-300 font-medium text-sm backdrop-blur-sm">
-                                Log in
+                                Log in or Sign up
                             </a>
                         @endif
                     </nav>

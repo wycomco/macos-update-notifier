@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Subscriber Inactive - {{ config('app.name', 'Laravel') }}</title>
+    <title>{{ __('public.subscriber_inactive.title') }} - {{ config('app.name', 'Laravel') }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="font-sans antialiased bg-gray-100 dark:bg-gray-900">
@@ -16,10 +16,10 @@
                     </svg>
                 </div>
                 <h2 class="mt-6 text-3xl font-extrabold text-gray-900 dark:text-white">
-                    Subscriber Inactive
+                    {{ __('public.subscriber_inactive.title') }}
                 </h2>
                 <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                    This subscription is no longer active
+                    {{ __('public.subscriber_inactive.subtitle') }}
                 </p>
             </div>
         </div>
@@ -28,23 +28,29 @@
             <div class="bg-white dark:bg-gray-800 py-8 px-4 shadow sm:rounded-lg sm:px-10">
                 <div class="text-center">
                     <p class="text-gray-600 dark:text-gray-400 mb-6">
-                        {{ $subscriber->email }} is no longer subscribed to macOS update notifications.
+                        {!! __('public.subscriber_inactive.no_longer_subscribed', ['email' => $subscriber->email]) !!}
                     </p>
                     
                     @if($subscriber->unsubscribed_at)
                         <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
-                            Unsubscribed on {{ $subscriber->unsubscribed_at->format('M j, Y \a\t g:i A') }}
+                            {!! __('public.subscriber_inactive.unsubscribed_on', [
+                                'date' => $subscriber->unsubscribed_at->format('M j, Y \a\t g:i A')
+                            ]) !!}
                         </p>
                     @endif
 
                     <div class="text-xs text-gray-500 dark:text-gray-400">
-                        <p>Want to resubscribe? Contact 
-                        @if($subscriber->admin)
-                            your admin at {{ $subscriber->admin->email }}
-                        @else
-                            support
-                        @endif
-                        for assistance.</p>
+                        <p>
+                            @if($subscriber->admin)
+                                {!! __('public.subscriber_inactive.want_resubscribe', [
+                                    'contact' => __('public.subscriber_inactive.your_admin', ['email' => $subscriber->admin->email])
+                                ]) !!}
+                            @else
+                                {!! __('public.subscriber_inactive.want_resubscribe', [
+                                    'contact' => __('public.subscriber_inactive.support')
+                                ]) !!}
+                            @endif
+                        </p>
                     </div>
                 </div>
             </div>

@@ -87,24 +87,20 @@
 
                         <!-- Action Buttons -->
                         <div class="flex flex-col sm:flex-row gap-4">
-                            @if (Route::has('register'))
-                                <a href="{{ route('register') }}" 
+                            @if (Route::has('magic-link.form'))
+                                <a href="{{ route('magic-link.form') }}" 
                                    class="inline-flex items-center justify-center px-8 py-4 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-semibold text-lg shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105">
-                                    Get Started — Free Forever
+                                    Magic Link Sign Up / Login
                                     <svg xmlns="http://www.w3.org/2000/svg" class="ml-2 w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
                                         <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
                                     </svg>
                                 </a>
                             @endif
                             <div class="flex gap-3">
-                                <a href="{{ route('login') }}" 
-                                   class="inline-flex items-center justify-center px-6 py-4 rounded-xl border border-white/20 hover:border-white/40 bg-white/10 hover:bg-white/20 text-white font-medium transition-all duration-300 backdrop-blur-sm">
-                                    Sign In
-                                </a>
-                                @if (Route::has('magic-link.form'))
-                                    <a href="{{ route('magic-link.form') }}" 
+                                @if (Route::has('register'))
+                                    <a href="{{ route('register') }}" 
                                        class="inline-flex items-center justify-center px-6 py-4 rounded-xl border border-white/20 hover:border-white/40 bg-white/10 hover:bg-white/20 text-white font-medium transition-all duration-300 backdrop-blur-sm">
-                                        Magic Link
+                                        or Sign up with Email
                                     </a>
                                 @endif
                             </div>
@@ -211,7 +207,7 @@
                                         <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
                                             <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
                                         </svg>
-                                        Pro tip: Use magic links to sign in without passwords — perfect for automated workflows!
+                                        Pro tip: Use magic links to sign in without passwords!
                                     </p>
                                 </div>
                             </div>

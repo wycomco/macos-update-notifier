@@ -88,6 +88,31 @@
                             @enderror
                         </div>
 
+                        <!-- Language Selection -->
+                        <div class="space-y-2">
+                            <label for="language" class="block text-sm font-medium text-slate-300">
+                                Preferred Language
+                            </label>
+                            <select id="language" 
+                                    name="language" 
+                                    required
+                                    class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300 @error('language') border-red-500 @enderror">
+                                @foreach($supportedLanguages as $code => $language)
+                                    <option value="{{ $code }}" 
+                                            {{ old('language', $subscriber->language) === $code ? 'selected' : '' }}
+                                            class="bg-slate-800 text-white">
+                                        {{ $language['flag'] }} {{ $language['name'] }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <p class="text-slate-400 text-sm">
+                                Language for email notifications and public pages
+                            </p>
+                            @error('language')
+                                <p class="text-red-400 text-sm mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
                         <!-- Subscribed macOS Versions -->
                         <div class="space-y-4">
                             <label class="block text-sm font-medium text-slate-300">
@@ -95,13 +120,13 @@
                             </label>
                             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                                 @foreach($availableVersions as $version)
-                                    <label class="relative flex items-center p-3 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-all duration-300 cursor-pointer group">
+                                    <label class="relative flex items-center p-3 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-all duration-300 cursor-pointer group has-[:checked]:bg-purple-500/20 has-[:checked]:border-purple-500 has-[:checked]:shadow-lg has-[:checked]:shadow-purple-500/25">
                                         <input type="checkbox" 
                                                name="subscribed_versions[]" 
                                                value="{{ $version }}" 
                                                {{ in_array($version, old('subscribed_versions', $subscriber->subscribed_versions ?? [])) ? 'checked' : '' }}
                                                class="sr-only peer">
-                                        <div class="w-5 h-5 bg-white/10 border-2 border-white/30 rounded-lg peer-checked:bg-purple-500 peer-checked:border-purple-500 transition-all duration-300 flex items-center justify-center">
+                                        <div class="w-5 h-5 bg-white/10 border-2 border-white/30 rounded-lg peer-checked:bg-purple-500 peer-checked:border-purple-500 peer-checked:shadow-lg peer-checked:shadow-purple-500/50 transition-all duration-300 flex items-center justify-center">
                                             <svg xmlns="http://www.w3.org/2000/svg" 
                                                  class="w-3 h-3 text-white opacity-0 peer-checked:opacity-100 transition-opacity duration-300" 
                                                  viewBox="0 0 20 20" 
@@ -109,7 +134,7 @@
                                                 <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
                                             </svg>
                                         </div>
-                                        <span class="ml-3 text-white font-medium group-hover:text-purple-300 transition-colors">
+                                        <span class="ml-3 text-white font-medium group-hover:text-purple-300 peer-checked:text-purple-200 transition-colors">
                                             {{ $version }}
                                         </span>
                                     </label>

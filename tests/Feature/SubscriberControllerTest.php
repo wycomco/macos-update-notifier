@@ -137,7 +137,6 @@ test('can update subscriber', function () {
 
     $updateData = [
         'email' => 'updated@example.com',
-        'macos_version' => 'Sonoma',
         'subscribed_versions' => ['macOS 14', 'macOS 15'],
         'days_to_install' => 14,
     ];
@@ -173,7 +172,6 @@ test('email uniqueness validation works on update but ignores current subscriber
     // Try to update subscriber2 with subscriber1's email - should fail
     $response = $this->put(route('subscribers.update', $subscriber2), [
         'email' => 'first@example.com',
-        'macos_version' => 'Sonoma',
         'subscribed_versions' => ['macOS 14'],
         'days_to_install' => 30,
     ]);
@@ -183,7 +181,6 @@ test('email uniqueness validation works on update but ignores current subscriber
     // Update subscriber2 with its own email - should work
     $response = $this->put(route('subscribers.update', $subscriber2), [
         'email' => 'second@example.com',
-        'macos_version' => 'Sonoma',
         'subscribed_versions' => ['macOS 14'],
         'days_to_install' => 30,
     ]);

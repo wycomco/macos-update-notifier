@@ -3,8 +3,11 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\MagicLinkRequest;
 use App\Models\User;
 use App\Notifications\MagicLinkNotification;
+use App\Services\MathCaptchaService;
+use App\Services\SecurityService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\URL;
@@ -18,19 +21,20 @@ class MagicLinkController extends Controller
      */
     public function create()
     {
-        return view('auth.magic-link');
+        // Generate CAPTCHA for the form
+        $captcha = MathCaptchaService::generate();
+        
+        return view('auth.magic-link', [
+            'captcha' => $captcha
+        ]);
     }
 
     /**
      * Send a magic link to the user's email
      */
-    public function store(Request $request)
+    public function store(MagicLinkRequest $request)
     {
-        $request->validate([
-            'email' => ['required', 'email'],
-        ]);
-
-        $email = $request->email;
+        $email = $request->validated()['email'];
         $user = User::where('email', $email)->first();
 
         try {
@@ -62,8 +66,15 @@ class MagicLinkController extends Controller
                 $message = 'Magic link sent! If this email is valid, an account will be created when you click the link.';
             }
 
+            // Clear rate limits on successful submission
+            SecurityService::clearRateLimit($request, 'magic_link');
+
         } catch (\Exception $e) {
             Log::error('Failed to send magic link email: ' . $e->getMessage());
+            
+            // Record failed attempt for rate limiting
+            SecurityService::recordFailedAttempt($request, 'magic_link');
+            
             return back()->withErrors(['email' => 'Failed to send magic link. Please try again later.']);
         }
 

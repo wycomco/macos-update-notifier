@@ -101,7 +101,9 @@ class SubscriberController extends Controller
     public function create()
     {
         $availableVersions = $this->getAvailableVersions();
-        return view('subscribers.create', compact('availableVersions'));
+        
+        $supportedLanguages = config('subscriber_languages.supported', []);
+        return view('subscribers.create', compact('availableVersions', 'supportedLanguages'));
     }
 
     /**
@@ -111,14 +113,21 @@ class SubscriberController extends Controller
     {
         $availableVersions = $this->getAvailableVersions();
         
-        $validated = $request->validate([
-            'email' => ['required', 'email', 'unique:subscribers,email'],
+                $validated = $request->validate([
+            'email' => ['required', 'email', 'max:255', 'unique:subscribers,email'],
             'subscribed_versions' => ['required', 'array', 'min:1'],
-            'subscribed_versions.*' => ['string', Rule::in($availableVersions)],
-            'days_to_install' => ['required', 'integer', 'min:1', 'max:365']
+            'subscribed_versions.*' => ['string', 'in:' . implode(',', $availableVersions)],
+            'days_to_install' => ['required', 'integer', 'min:1', 'max:365'],
+            'language' => config('subscriber_languages.validation_rule', 'required|string|in:en,de,fr,es'),
         ]);
 
         $validated['admin_id'] = Auth::id();
+        
+        // Apply default language if none specified
+        if (empty($validated['language'])) {
+            $validated['language'] = config('subscriber_languages.default', 'en');
+        }
+        
         Subscriber::create($validated);
 
         return redirect()->route('subscribers.index')
@@ -148,7 +157,8 @@ class SubscriberController extends Controller
         $this->authorizeSubscriber($subscriber);
         
         $availableVersions = $this->getAvailableVersions();
-        return view('subscribers.edit', compact('subscriber', 'availableVersions'));
+        $supportedLanguages = config('subscriber_languages.supported', []);
+        return view('subscribers.edit', compact('subscriber', 'availableVersions', 'supportedLanguages'));
     }
 
     /**
@@ -162,17 +172,22 @@ class SubscriberController extends Controller
         
         $validated = $request->validate([
             'email' => ['required', 'email', Rule::unique('subscribers', 'email')->ignore($subscriber->id)],
-            'macos_version' => ['required', 'string'],
+            'language' => config('subscriber_languages.validation_rule', 'required|string|in:en,de,fr,es'),
             'subscribed_versions' => ['required', 'array', 'min:1'],
             'subscribed_versions.*' => ['string', Rule::in($availableVersions)],
             'days_to_install' => ['required', 'integer', 'min:1', 'max:365']
         ]);
 
-        // Check if macOS version changed and log the action
-        if ($subscriber->macos_version !== $validated['macos_version']) {
-            $subscriber->updateMacOSVersion($validated['macos_version']);
+        // Apply default language if none specified
+        if (empty($validated['language'])) {
+            $validated['language'] = config('subscriber_languages.default', 'en');
         }
-        
+
+        // Check if language changed and log the action
+        if ($subscriber->language !== $validated['language']) {
+            $subscriber->updateLanguage($validated['language']);
+        }
+
         // Check if subscribed versions changed and log the action
         if ($subscriber->subscribed_versions !== $validated['subscribed_versions']) {
             $subscriber->updateVersions($validated['subscribed_versions']);
@@ -199,6 +214,66 @@ class SubscriberController extends Controller
 
         return redirect()->route('subscribers.index')
             ->with('success', 'Subscriber deleted successfully!');
+    }
+
+    /**
+     * Show the form for re-enabling subscription for an unsubscribed subscriber
+     */
+    public function showResubscribe(Subscriber $subscriber)
+    {
+        $this->authorizeSubscriber($subscriber);
+        
+        // Only allow resubscribe form for unsubscribed users
+        if ($subscriber->isActive()) {
+            return redirect()->route('subscribers.show', $subscriber)
+                ->with('info', 'This subscriber is already active.');
+        }
+        
+        return view('subscribers.resubscribe', compact('subscriber'));
+    }
+
+    /**
+     * Re-enable subscription for an unsubscribed subscriber
+     */
+    public function resubscribe(Request $request, Subscriber $subscriber)
+    {
+        $this->authorizeSubscriber($subscriber);
+        
+        // Validate consent requirements
+        $validated = $request->validate([
+            'legal_confirmation' => ['required', 'accepted'],
+            'consent_method' => ['required', 'string', 'in:email,phone,in_person,support_ticket,written_form,website_form,other'],
+            'consent_notes' => ['nullable', 'string', 'max:1000'],
+        ], [
+            'legal_confirmation.required' => 'You must confirm you have legal permission to re-enable this subscription.',
+            'legal_confirmation.accepted' => 'You must confirm you have legal permission to re-enable this subscription.',
+            'consent_method.required' => 'You must specify how consent was obtained.',
+            'consent_method.in' => 'Please select a valid consent method.',
+        ]);
+        
+        // Re-enable the subscription with proper logging
+        $subscriber->resubscribe(
+            \Illuminate\Support\Facades\Auth::user(),
+            $validated['consent_method'],
+            $validated['consent_notes'] ?? null
+        );
+        
+        // Log additional consent information
+        $subscriber->actions()->create([
+            'action' => 'resubscribe_consent_logged',
+            'admin_id' => \Illuminate\Support\Facades\Auth::id(),
+            'details' => json_encode([
+                'consent_method' => $validated['consent_method'],
+                'consent_notes' => $validated['consent_notes'] ?? null,
+                'legal_confirmation' => true,
+                'admin_name' => \Illuminate\Support\Facades\Auth::user()->name,
+                'admin_email' => \Illuminate\Support\Facades\Auth::user()->email,
+                'resubscribed_at' => now()->toISOString(),
+            ]),
+        ]);
+
+        return redirect()->route('subscribers.show', $subscriber)
+            ->with('success', 'Subscription has been successfully re-enabled.');
     }
 
     /**

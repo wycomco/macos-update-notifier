@@ -342,8 +342,12 @@ php artisan queue:work
 2. Choose your method:
    - **CSV Upload**: Upload a properly formatted CSV file
    - **Copy/Paste**: Paste data directly from Excel/Sheets
+3. Configure import settings:
+   - **macOS Versions**: Select which versions to monitor
+   - **Days to Install**: Set notification deadline (1-365 days)
+   - **Language**: Choose notification language (optional, defaults to English)
 
-##### CSV Format Example:
+##### CSV Format Example
 
 ```csv
 email,subscribed_versions,days_to_install
@@ -351,6 +355,15 @@ user1@company.com,"macOS 14,macOS 15",30
 user2@company.com,"macOS 15",14
 admin@company.com,"macOS 14,macOS 15",60
 ```
+
+##### Language Support
+
+- **English** (en) - Default
+- **German** (de) - Deutsch
+- **French** (fr) - Français  
+- **Spanish** (es) - Español
+
+All imported subscribers will use the selected language for notifications. If no language is specified, English will be used as the default.
 
 ---
 
@@ -501,6 +514,7 @@ The system uses SQLite by default, requiring minimal maintenance. For high-volum
 If notifications aren't being sent:
 
 1. **Check queue worker status**:
+
    ```bash
    # View queue status
    php artisan queue:status
@@ -510,17 +524,20 @@ If notifications aren't being sent:
    ```
 
 2. **Test email sending manually**:
+
    ```bash
    # Send a test notification
    php artisan macos:check-updates --test-email=your-email@company.com
    ```
 
 3. **Restart queue worker**:
+
    ```bash
    php artisan queue:restart
    ```
 
 4. **Check worker logs**:
+
    ```bash
    # Application logs
    tail -f storage/logs/laravel.log
