@@ -146,8 +146,8 @@ class MagicLinkController extends Controller
      */
     private function shouldBeSuperAdmin(string $email): bool
     {
-        // Get super admin emails from environment variable
-        $superAdminEmails = collect(explode(',', env('SUPER_ADMIN_EMAILS', '')))
+        // Get super admin emails from config
+        $superAdminEmails = collect(config('auth.super_admin_emails', []))
             ->map(fn($email) => trim($email))
             ->filter();
 

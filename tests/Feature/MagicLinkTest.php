@@ -180,12 +180,13 @@ test('expired magic link for new user is rejected', function () {
 });
 
 test('super admin email creates super admin user', function () {
-    // Set environment variable for super admin emails
-    config(['app.env' => 'testing']);
-    putenv('SUPER_ADMIN_EMAILS=admin@company.com,superuser@example.com');
-    
+    // Set configuration for super admin emails
+    config([
+        'auth.super_admin_emails' => ['admin@company.com', 'superuser@example.com'],
+    ]);
+
     $email = 'admin@company.com';
-    
+
     // Create magic link for super admin email
     $magicLink = URL::temporarySignedRoute(
         'magic-link.verify-new',

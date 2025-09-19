@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1] – 2025-09-19
+
+### Fixed
+
+- Moved handling of super_admin_emails to config
+
 ## [0.1] – 2025-09-18
 
 ### Added

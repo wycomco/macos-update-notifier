@@ -112,4 +112,17 @@ return [
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Super Admin Emails
+    |--------------------------------------------------------------------------
+    |
+    | Here you may define the email addresses that should be considered as
+    | super admins. Users with these email addresses will have elevated
+    | privileges within the application.
+    |
+    */
+
+    'super_admin_emails' => explode(',', env('SUPER_ADMIN_EMAILS', '')),
+
 ];
